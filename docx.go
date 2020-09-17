@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -101,8 +100,6 @@ func (d *Docx) Write(writer io.Writer) error {
 	defer zipWriter.Close()
 
 	for _, file := range d.files {
-		log.Print(file.Name)
-
 		fileWriter, err := zipWriter.Create(file.Name)
 		if err != nil {
 			return fmt.Errorf("unable to create zip writer: %s", err)

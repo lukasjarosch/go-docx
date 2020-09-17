@@ -1,11 +1,12 @@
 package main
 
 import (
-	docx "dox-replacer-v2"
 	"errors"
 	"log"
 	"os"
 	"time"
+
+	"github.com/lukasjarosch/go-docx"
 )
 
 func main() {
@@ -36,25 +37,22 @@ func main() {
 		"key.with.dots":               "REPLACE",
 		"mixed-key.separator_styles#": "REPLACE",
 		"yet-another_placeholder":     "REPLACE",
-		"foo": "bar",
+		"foo":                         "bar",
 	}
-
-
 
 	docBytes := replaceInDocument(doc.Plaintext(doc.DocumentBytes()), doc.DocumentBytes(), exampleMapping)
 	headerBytes := make(map[string][]byte, len(doc.Headers()))
 	for i, header := range doc.Headers() {
-		headerBytes[i] = replaceInDocument(doc.Plaintext(doc.DocumentBytes()), header, exampleMapping)
+		headerBytes[i] = replaceInDocument(doc.Plaintext(header), header, exampleMapping)
 	}
 	footerBytes := make(map[string][]byte, len(doc.Footer()))
 	for i, footer := range doc.Footer() {
-		headerBytes[i] = replaceInDocument(doc.Plaintext(doc.DocumentBytes()), footer, exampleMapping)
+		headerBytes[i] = replaceInDocument(doc.Plaintext(footer), footer, exampleMapping)
 	}
 
 	doc.SetDocumentContent(docBytes)
 	doc.SetHeaders(headerBytes)
 	doc.SetFooters(footerBytes)
-
 
 	log.Printf("took: %s", time.Since(startTime))
 
