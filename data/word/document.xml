@@ -1,288 +1,300 @@
-<?xml version="1.0" ?>
-<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 wp14">
-	<w:body>
-		<w:p>
-			<w:pPr>
-				<w:pStyle w:val="para4"/>
-			</w:pPr>
-			<w:r/>
-		</w:p>
-		<w:p>
-			<w:pPr>
-				<w:pStyle w:val="para4"/>
-			</w:pPr>
-			<w:r>
-				<w:t>{key}{key}{key-</w:t>
-			</w:r>
-		</w:p>
-		<w:p>
-			<w:pPr>
-				<w:pStyle w:val="para4"/>
-			</w:pPr>
-			<w:r>
-				<w:t>with-dash}</w:t>
-			</w:r>
-		</w:p>
-		<w:p>
-			<w:pPr>
-				<w:pStyle w:val="para4"/>
-				<w:spacing/>
-				<w:jc w:val="right"/>
-			</w:pPr>
-			<w:r>
-				<w:t>{key-with-dashes}</w:t>
-			</w:r>
-		</w:p>
-		<w:p>
-			<w:pPr>
-				<w:pStyle w:val="para4"/>
-				<w:rPr>
-					<w:b/>
-					<w:highlight w:val="yellow"/>
-					<w:bCs/>
-				</w:rPr>
-			</w:pPr>
-			<w:r>
-				<w:rPr>
-					<w:b/>
-					<w:highlight w:val="yellow"/>
-					<w:bCs/>
-				</w:rPr>
-				<w:t>{key_</w:t>
-			</w:r>
-			<w:r>
-				<w:rPr>
-					<w:b/>
-					<w:highlight w:val="yellow"/>
-					<w:bCs/>
-					<w:sz w:val="22"/>
-					<w:szCs w:val="22"/>
-				</w:rPr>
-				<w:t>with</w:t>
-			</w:r>
-			<w:r>
-				<w:rPr>
-					<w:b/>
-					<w:highlight w:val="yellow"/>
-					<w:bCs/>
-				</w:rPr>
-				<w:t>_underscore}</w:t>
-			</w:r>
-		</w:p>
-		<w:p>
-			<w:pPr>
-				<w:pStyle w:val="para4"/>
-			</w:pPr>
-			<w:r>
-				<w:t>{key with space}</w:t>
-			</w:r>
-		</w:p>
-		<w:p>
-			<w:pPr>
-				<w:pStyle w:val="para4"/>
-			</w:pPr>
-			<w:r>
-				<w:t>{mult</w:t>
-			</w:r>
-		</w:p>
-		<w:p>
-			<w:pPr>
-				<w:pStyle w:val="para4"/>
-			</w:pPr>
-			<w:r>
-				<w:t>iline}</w:t>
-			</w:r>
-		</w:p>
-		<w:p>
-			<w:pPr>
-				<w:pStyle w:val="para4"/>
-				<w:spacing/>
-				<w:jc w:val="right"/>
-				<w:rPr>
-					<w:i/>
-					<w:iCs/>
-				</w:rPr>
-			</w:pPr>
-			<w:r>
-				<w:rPr>
-					<w:i/>
-					<w:iCs/>
-				</w:rPr>
-				<w:t>{key.with.dots}</w:t>
-			</w:r>
-		</w:p>
-		<w:p>
-			<w:pPr>
-				<w:pStyle w:val="para4"/>
-				<w:rPr>
-					<w:b/>
-					<w:bCs/>
-				</w:rPr>
-			</w:pPr>
-			<w:r>
-				<w:rPr>
-					<w:b/>
-					<w:bCs/>
-				</w:rPr>
-				<w:t>{mixed-key.separator_styles#}</w:t>
-			</w:r>
-		</w:p>
-		<w:p>
-			<w:pPr>
-				<w:pStyle w:val="para4"/>
-				<w:rPr>
-					<w:b/>
-					<w:bCs/>
-				</w:rPr>
-			</w:pPr>
-			<w:r>
-				<w:rPr>
-					<w:b/>
-					<w:bCs/>
-				</w:rPr>
-			</w:r>
-		</w:p>
-		<w:p>
-			<w:pPr>
-				<w:pStyle w:val="para4"/>
-				<w:rPr>
-					<w:b/>
-					<w:bCs/>
-				</w:rPr>
-			</w:pPr>
-			<w:r>
-				<w:rPr>
-					<w:b/>
-					<w:bCs/>
-				</w:rPr>
-			</w:r>
-		</w:p>
-		<w:p>
-			<w:pPr>
-				<w:pStyle w:val="para4"/>
-				<w:spacing/>
-				<w:jc w:val="center"/>
-				<w:rPr>
-					<w:b/>
-					<w:bCs/>
-				</w:rPr>
-			</w:pPr>
-			<w:r>
-				<w:rPr>
-					<w:b/>
-					<w:bCs/>
-				</w:rPr>
-				<w:t>{yet-another_placeholder}</w:t>
-			</w:r>
-		</w:p>
-		<w:p>
-			<w:pPr>
-				<w:pStyle w:val="para4"/>
-				<w:spacing/>
-				<w:jc w:val="center"/>
-				<w:rPr>
-					<w:b/>
-					<w:bCs/>
-				</w:rPr>
-			</w:pPr>
-			<w:r>
-				<w:rPr>
-					<w:b/>
-					<w:bCs/>
-				</w:rPr>
-			</w:r>
-		</w:p>
-		<w:p>
-			<w:pPr>
-				<w:pStyle w:val="para4"/>
-				<w:spacing/>
-				<w:jc w:val="center"/>
-				<w:rPr>
-					<w:b/>
-					<w:bCs/>
-				</w:rPr>
-			</w:pPr>
-			<w:r>
-				<w:rPr>
-					<w:b/>
-					<w:bCs/>
-				</w:rPr>
-			</w:r>
-		</w:p>
-		<w:p>
-			<w:pPr>
-				<w:pStyle w:val="para4"/>
-				<w:spacing/>
-				<w:jc w:val="center"/>
-				<w:rPr>
-					<w:b/>
-					<w:bCs/>
-				</w:rPr>
-			</w:pPr>
-			<w:r>
-				<w:rPr>
-					<w:b/>
-					<w:bCs/>
-				</w:rPr>
-			</w:r>
-		</w:p>
-		<w:p>
-			<w:pPr>
-				<w:pStyle w:val="para4"/>
-				<w:rPr>
-					<w:b/>
-					<w:bCs/>
-				</w:rPr>
-			</w:pPr>
-			<w:r>
-				<w:rPr>
-					<w:b/>
-					<w:bCs/>
-				</w:rPr>
-				<w:t>Einfach nur Text. Hier soll nix ersetzt</w:t>
-			</w:r>
-		</w:p>
-		<w:p>
-			<w:pPr>
-				<w:pStyle w:val="para4"/>
-				<w:rPr>
-					<w:b/>
-					<w:bCs/>
-				</w:rPr>
-			</w:pPr>
-			<w:r>
-				<w:rPr>
-					<w:b/>
-					<w:bCs/>
-				</w:rPr>
-				<w:t>werden!</w:t>
-			</w:r>
-		</w:p>
-		<w:sectPr>
-			<w:footnotePr>
-				<w:pos w:val="pageBottom"/>
-				<w:numFmt w:val="decimal"/>
-				<w:numStart w:val="1"/>
-				<w:numRestart w:val="continuous"/>
-			</w:footnotePr>
-			<w:endnotePr>
-				<w:pos w:val="docEnd"/>
-				<w:numFmt w:val="decimal"/>
-				<w:numStart w:val="1"/>
-				<w:numRestart w:val="continuous"/>
-			</w:endnotePr>
-			<w:type w:val="continuous"/>
-			<w:pgSz w:h="15840" w:w="12240"/>
-			<w:pgMar w:left="1440" w:top="1440" w:right="1440" w:bottom="1440" w:header="0" w:footer="0"/>
-			<w:paperSrc w:first="0" w:other="0"/>
-			<w:pgNumType w:fmt="decimal"/>
-			<w:tmGutter w:val="1"/>
-			<w:mirrorMargins w:val="0"/>
-			<w:tmSection w:h="-1"/>
-			<w:guidesAndGridMasterPages Id="0" numberOfVerticalGuides="0" numberOfHorizontalGuides="0"/>
-			<w:guidesAndGridMasterPages Id="1" numberOfVerticalGuides="0" numberOfHorizontalGuides="0"/>
-			<w:guidesAndGridMasterPages Id="2" numberOfVerticalGuides="0" numberOfHorizontalGuides="0"/>
-		</w:sectPr>
-	</w:body>
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"
+            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+            xmlns:o="urn:schemas-microsoft-com:office:office"
+            xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+            xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml"
+            xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing"
+            xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+            xmlns:w10="urn:schemas-microsoft-com:office:word"
+            xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+            xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"
+            xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup"
+            xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk"
+            xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml"
+            xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 wp14">
+    <w:body>
+        <w:p>
+            <w:pPr>
+                <w:pStyle w:val="para4"/>
+            </w:pPr>
+            <w:r/>
+        </w:p>
+        <w:p>
+            <w:pPr>
+                <w:pStyle w:val="para4"/>
+            </w:pPr>
+            <w:r>
+                <w:t>{key}-{key}-{key}-{key-</w:t>
+            </w:r>
+        </w:p>
+        <w:p>
+            <w:pPr>
+                <w:pStyle w:val="para4"/>
+            </w:pPr>
+            <w:r>
+                <w:t>with-dash}</w:t>
+            </w:r>
+        </w:p>
+        <w:p>
+            <w:pPr>
+                <w:pStyle w:val="para4"/>
+                <w:spacing/>
+                <w:jc w:val="right"/>
+            </w:pPr>
+            <w:r>
+                <w:t>{key-with-dashes}</w:t>
+            </w:r>
+        </w:p>
+        <w:p>
+            <w:pPr>
+                <w:pStyle w:val="para4"/>
+                <w:rPr>
+                    <w:b/>
+                    <w:highlight w:val="yellow"/>
+                    <w:bCs/>
+                </w:rPr>
+            </w:pPr>
+            <w:r>
+                <w:rPr>
+                    <w:b/>
+                    <w:highlight w:val="yellow"/>
+                    <w:bCs/>
+                </w:rPr>
+                <w:t>{key_</w:t>
+            </w:r>
+            <w:r>
+                <w:rPr>
+                    <w:b/>
+                    <w:highlight w:val="yellow"/>
+                    <w:bCs/>
+                    <w:sz w:val="32"/>
+                    <w:szCs w:val="32"/>
+                </w:rPr>
+                <w:t>with</w:t>
+            </w:r>
+            <w:r>
+                <w:rPr>
+                    <w:b/>
+                    <w:highlight w:val="yellow"/>
+                    <w:bCs/>
+                </w:rPr>
+                <w:t>_underscore}</w:t>
+            </w:r>
+        </w:p>
+        <w:p>
+            <w:pPr>
+                <w:pStyle w:val="para4"/>
+            </w:pPr>
+            <w:r>
+                <w:t>{key with space}</w:t>
+            </w:r>
+        </w:p>
+        <w:p>
+            <w:pPr>
+                <w:pStyle w:val="para4"/>
+            </w:pPr>
+            <w:r>
+                <w:t>{mult</w:t>
+            </w:r>
+        </w:p>
+        <w:p>
+            <w:pPr>
+                <w:pStyle w:val="para4"/>
+            </w:pPr>
+            <w:r>
+                <w:t>iline}</w:t>
+            </w:r>
+        </w:p>
+        <w:p>
+            <w:pPr>
+                <w:pStyle w:val="para4"/>
+                <w:spacing/>
+                <w:jc w:val="right"/>
+                <w:rPr>
+                    <w:i/>
+                    <w:iCs/>
+                </w:rPr>
+            </w:pPr>
+            <w:r>
+                <w:rPr>
+                    <w:i/>
+                    <w:iCs/>
+                </w:rPr>
+                <w:t>{key.with.dots}</w:t>
+            </w:r>
+        </w:p>
+        <w:p>
+            <w:pPr>
+                <w:pStyle w:val="para4"/>
+                <w:rPr>
+                    <w:b/>
+                    <w:bCs/>
+                </w:rPr>
+            </w:pPr>
+            <w:r>
+                <w:rPr>
+                    <w:b/>
+                    <w:bCs/>
+                </w:rPr>
+                <w:t>{mixed-key.separator_styles#}</w:t>
+            </w:r>
+        </w:p>
+        <w:p>
+            <w:pPr>
+                <w:pStyle w:val="para4"/>
+                <w:rPr>
+                    <w:b/>
+                    <w:bCs/>
+                </w:rPr>
+            </w:pPr>
+            <w:r>
+                <w:rPr>
+                    <w:b/>
+                    <w:bCs/>
+                </w:rPr>
+            </w:r>
+        </w:p>
+        <w:p>
+            <w:pPr>
+                <w:pStyle w:val="para4"/>
+                <w:rPr>
+                    <w:b/>
+                    <w:bCs/>
+                </w:rPr>
+            </w:pPr>
+            <w:r>
+                <w:rPr>
+                    <w:b/>
+                    <w:bCs/>
+                </w:rPr>
+            </w:r>
+        </w:p>
+        <w:p>
+            <w:pPr>
+                <w:pStyle w:val="para4"/>
+                <w:spacing/>
+                <w:jc w:val="center"/>
+                <w:rPr>
+                    <w:b/>
+                    <w:bCs/>
+                </w:rPr>
+            </w:pPr>
+            <w:r>
+                <w:rPr>
+                    <w:b/>
+                    <w:bCs/>
+                </w:rPr>
+                <w:t>{yet-another_placeholder}</w:t>
+            </w:r>
+        </w:p>
+        <w:p>
+            <w:pPr>
+                <w:pStyle w:val="para4"/>
+                <w:spacing/>
+                <w:jc w:val="center"/>
+                <w:rPr>
+                    <w:b/>
+                    <w:bCs/>
+                </w:rPr>
+            </w:pPr>
+            <w:r>
+                <w:rPr>
+                    <w:b/>
+                    <w:bCs/>
+                </w:rPr>
+            </w:r>
+        </w:p>
+        <w:p>
+            <w:pPr>
+                <w:pStyle w:val="para4"/>
+                <w:spacing/>
+                <w:jc w:val="center"/>
+                <w:rPr>
+                    <w:b/>
+                    <w:bCs/>
+                </w:rPr>
+            </w:pPr>
+            <w:r>
+                <w:rPr>
+                    <w:b/>
+                    <w:bCs/>
+                </w:rPr>
+            </w:r>
+        </w:p>
+        <w:p>
+            <w:pPr>
+                <w:pStyle w:val="para4"/>
+                <w:spacing/>
+                <w:jc w:val="center"/>
+                <w:rPr>
+                    <w:b/>
+                    <w:bCs/>
+                </w:rPr>
+            </w:pPr>
+            <w:r>
+                <w:rPr>
+                    <w:b/>
+                    <w:bCs/>
+                </w:rPr>
+            </w:r>
+        </w:p>
+        <w:p>
+            <w:pPr>
+                <w:pStyle w:val="para4"/>
+                <w:rPr>
+                    <w:b/>
+                    <w:bCs/>
+                </w:rPr>
+            </w:pPr>
+            <w:r>
+                <w:rPr>
+                    <w:b/>
+                    <w:bCs/>
+                </w:rPr>
+                <w:t>Einfach nur Text. Hier soll nix ersetzt</w:t>
+            </w:r>
+        </w:p>
+        <w:p>
+            <w:pPr>
+                <w:pStyle w:val="para4"/>
+                <w:rPr>
+                    <w:b/>
+                    <w:bCs/>
+                </w:rPr>
+            </w:pPr>
+            <w:r>
+                <w:rPr>
+                    <w:b/>
+                    <w:bCs/>
+                </w:rPr>
+                <w:t>werden!</w:t>
+            </w:r>
+        </w:p>
+        <w:sectPr>
+            <w:footnotePr>
+                <w:pos w:val="pageBottom"/>
+                <w:numFmt w:val="decimal"/>
+                <w:numStart w:val="1"/>
+                <w:numRestart w:val="continuous"/>
+            </w:footnotePr>
+            <w:endnotePr>
+                <w:pos w:val="docEnd"/>
+                <w:numFmt w:val="decimal"/>
+                <w:numStart w:val="1"/>
+                <w:numRestart w:val="continuous"/>
+            </w:endnotePr>
+            <w:type w:val="continuous"/>
+            <w:pgSz w:h="15840" w:w="12240"/>
+            <w:pgMar w:left="1440" w:top="1440" w:right="1440" w:bottom="1440" w:header="0" w:footer="0"/>
+            <w:paperSrc w:first="0" w:other="0"/>
+            <w:pgNumType w:fmt="decimal"/>
+            <w:tmGutter w:val="1"/>
+            <w:mirrorMargins w:val="0"/>
+            <w:tmSection w:h="-1"/>
+            <w:guidesAndGridMasterPages Id="0" numberOfVerticalGuides="0" numberOfHorizontalGuides="0"/>
+            <w:guidesAndGridMasterPages Id="1" numberOfVerticalGuides="0" numberOfHorizontalGuides="0"/>
+            <w:guidesAndGridMasterPages Id="2" numberOfVerticalGuides="0" numberOfHorizontalGuides="0"/>
+        </w:sectPr>
+    </w:body>
 </w:document>
-
