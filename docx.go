@@ -4,24 +4,31 @@ import (
 	"archive/zip"
 	"bytes"
 	"fmt"
-	"github.com/microcosm-cc/bluemonday"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
+	"regexp"
+
+	"github.com/microcosm-cc/bluemonday"
 )
 
 const (
 	DocumentXmlPath = "word/document.xml"
 )
 
+var (
+	HeaderPathRegex = regexp.MustCompile(`word/header[0-9]*.xml`)
+	FooterPathRegex = regexp.MustCompile(`word/footer[0-9]*.xml`)
+)
+
 // Docx is the representation of a docx file.
 type Docx struct {
 	originalPath string
 	files        []*zip.File
-	documentXml []byte
-	linksXml     string
-	headersXml   map[string]string
-	footersXml   map[string]string
+	documentXml  []byte
+	headersXml   map[string][]byte
+	footersXml   map[string][]byte
 }
 
 // Content returns the actual content of the docx file (word/document.xml) as string.
@@ -29,14 +36,30 @@ func (d *Docx) Content() string {
 	return string(d.documentXml)
 }
 
-// Bytes returns the actual content of the docx file (word/document.xml) as raw byte slice
-func (d *Docx) Bytes() []byte {
+// DocumentBytes returns the actual content of the docx file (word/document.xml) as raw byte slice
+func (d *Docx) DocumentBytes() []byte {
 	return d.documentXml
 }
 
+func (d *Docx) Headers() map[string][]byte {
+	return d.headersXml
+}
+
+func (d *Docx) SetHeaders(headers map[string][]byte) {
+	d.headersXml = headers
+}
+
+func (d *Docx) Footer() map[string][]byte {
+	return d.footersXml
+}
+
+func (d *Docx) SetFooters(footers map[string][]byte) {
+	d.footersXml = footers
+}
+
 // Plaintext returns the document with all tags stripped.
-func (d *Docx) Plaintext() string {
-	return bluemonday.StripTagsPolicy().Sanitize(d.Content())
+func (d *Docx) Plaintext(data []byte) string {
+	return bluemonday.StripTagsPolicy().Sanitize(string(data))
 }
 
 // SetContent will overwrite the content of the docx file (word/document.xml).
@@ -78,6 +101,8 @@ func (d *Docx) Write(writer io.Writer) error {
 	defer zipWriter.Close()
 
 	for _, file := range d.files {
+		log.Print(file.Name)
+
 		fileWriter, err := zipWriter.Create(file.Name)
 		if err != nil {
 			return fmt.Errorf("unable to create zip writer: %s", err)
@@ -91,16 +116,34 @@ func (d *Docx) Write(writer io.Writer) error {
 			return nil
 		}
 
-		// currently, we're only rewriting the main document.xml.
-		// this is meant to be expanded in the future.
-		switch file.Name {
-		case DocumentXmlPath:
-			if err := write(fileWriter, file.Name, []byte(d.documentXml)); err != nil {
+		for fileName, headerBytes := range d.headersXml {
+			if file.Name == fileName {
+				if err := write(fileWriter, file.Name, headerBytes); err != nil {
+					return err
+				}
+				break
+			}
+		}
+
+		for fileName, footerBytes := range d.footersXml {
+			if file.Name == fileName {
+				if err := write(fileWriter, file.Name, footerBytes); err != nil {
+					return err
+				}
+				break
+			}
+		}
+
+		if file.Name == DocumentXmlPath {
+			if err := write(fileWriter, file.Name, d.documentXml); err != nil {
 				return err
 			}
-			break
-		default:
-			// default case, open the original file which we got from the archive and copy the bytes into the new archive
+		}
+
+		// default case, open the original file which we got from the archive and copy the bytes into the new archive
+		if file.Name != DocumentXmlPath &&
+			!HeaderPathRegex.MatchString(file.Name) &&
+			!FooterPathRegex.MatchString(file.Name)	{
 			readCloser, err := file.Open()
 			if err != nil {
 				return fmt.Errorf("unable to open %s: %s", file.Name, err)

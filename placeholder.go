@@ -166,6 +166,10 @@ func parseFullPlaceholders(run *Run, openPos, closePos []int) (placeholders []*P
 	return placeholders
 }
 
+// PlaceholderFragment is a part of a placeholder within the document.xml
+// If the full placeholder is e.g. '{foo-bar}', the placeholder might be ripped
+// apart according to the WordprocessingML spec. So it will most likely occur, that
+// the placeholders are split into multiple fragments (e.g. '{foo' and '-bar}').
 type PlaceholderFragment struct {
 	Position Position // Position of the actual fragment within the run text. 0 == (Run.Text.StartTag.End + 1)
 	Number   int      // numbering fragments for ease of use
@@ -182,14 +186,22 @@ func (p PlaceholderFragment) EndPos() int64 {
 	return p.Run.Text.StartTag.End + p.Position.End
 }
 
+// Text returns the actual text of the fragment given the source bytes.
+// If the given byte slice is not large enough for the offsets, an empty string is returned.
 func (p PlaceholderFragment) Text(docBytes []byte) string {
+	if int64(len(docBytes)) < p.StartPos() ||
+		int64(len(docBytes)) < p.EndPos() {
+		return ""
+	}
 	return string(docBytes[p.StartPos():p.EndPos()])
 }
 
+// TextLength returns the actual length of the fragment given a byte source.
 func (p PlaceholderFragment) TextLength(docBytes []byte) int64 {
 	return int64(len(p.Text(docBytes)))
 }
 
+// String spits out the most important bits and pieces of a fragment.
 func (p PlaceholderFragment) String(docBytes []byte) string {
 	format := "fragment in run [%d:%d] '%s' - [%d:%d] '%s'; run-text [%d:%d] '%s' - [%d:%d] '%s'; positions: [%d:%d] '%s'"
 	return fmt.Sprintf(format,
@@ -217,10 +229,35 @@ func FindDelimitedPlaceholders(plaintext string, placeholderMap PlaceholderMap) 
 	return foundKeys
 }
 
+// AddPlaceholderDelimiter will wrap the given string with OpenDelimiter and CloseDelimiter.
+// If the given string is already a delimited placeholder, it is returned unchanged.
 func AddPlaceholderDelimiter(s string) string {
+	if IsDelimitedPlaceholder(s) {
+		return s
+	}
 	return fmt.Sprintf("%c%s%c", OpenDelimiter, s, CloseDelimiter)
 }
 
-func StripPlaceholderDelimiter(s string) string {
+// RemovePlaceholderDelimiter removes OpenDelimiter and CloseDelimiter from the given text.
+// If the given text is not a delimited placeholder, it is returned unchanged.
+func RemovePlaceholderDelimiter(s string) string {
+	if !IsDelimitedPlaceholder(s) {
+		return s
+	}
 	return strings.Trim(s, fmt.Sprintf("%s%s", string(OpenDelimiter), string(CloseDelimiter)))
+}
+
+// IsDelimitedPlaceholder returns true if the given string is a delimited placeholder.
+// It checks whether the first and last rune in the string is the OpenDelimiter and CloseDelimiter respectively.
+// If the string is empty, false is returned.
+func IsDelimitedPlaceholder(s string) bool {
+	if len(s) < 1 {
+		return false
+	}
+	first := s[0]
+	last := s[len(s)-1]
+	if rune(first) == OpenDelimiter && rune(last) == CloseDelimiter {
+		return true
+	}
+	return false
 }

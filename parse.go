@@ -48,11 +48,11 @@ func (dr DocumentRuns) WithText() DocumentRuns {
 }
 
 type RunParser struct {
-	doc *Docx
+	doc []byte
 	runs DocumentRuns
 }
 
-func NewRunParser(doc *Docx) *RunParser {
+func NewRunParser(doc []byte) *RunParser {
 	return &RunParser{
 		doc:  doc,
 		runs: DocumentRuns{},
@@ -83,7 +83,7 @@ func (parser *RunParser) Runs() DocumentRuns {
 // The text tags are not analyzed at this point, that's the next step.
 func (parser *RunParser) findRuns() error {
 	// use a custom reader which saves the current byte position
-	docReader := NewReader(parser.doc.Content())
+	docReader := NewReader(string(parser.doc))
 	decoder := xml.NewDecoder(docReader)
 
 	// find all runs in document.xml
@@ -109,13 +109,13 @@ func (parser *RunParser) findRuns() error {
 				// special case, an empty tag: <w:r/> is also considered to be a start element
 				// the tag is 1 byte longer which needs to be addressed
 				// since there is no real end tag, the element is marked for the EndElement case to handle it appropriately
-				tagStr := string(parser.doc.Bytes()[tmpRun.StartTag.Start:tmpRun.StartTag.End])
+				tagStr := string(parser.doc[tmpRun.StartTag.Start:tmpRun.StartTag.End])
 				if strings.Contains(tagStr, "/>") {
 					tmpRun.StartTag.Start -= 1
 					singleElement = true
 				}
 
-				//log.Printf("%d: START: %s", docReader.Pos(), doc.Bytes()[startRunTagStartPos:startRunTagEndPos])
+				//log.Printf("%d: START: %s", docReader.Pos(), doc.DocumentBytes()[startRunTagStartPos:startRunTagEndPos])
 			}
 			break
 
@@ -145,7 +145,7 @@ func (parser *RunParser) findRuns() error {
 
 func (parser *RunParser) findTextRuns() error {
 	// use a custom reader which saves the current byte position
-	docReader := NewReader(parser.doc.Content())
+	docReader := NewReader(string(parser.doc))
 	decoder := xml.NewDecoder(docReader)
 
 	// based on the current position, find out in which run we're at

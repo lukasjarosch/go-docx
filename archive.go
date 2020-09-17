@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 )
 
 // An OOXML document is basically a zip archive. This is the representation for DOCX file archives.
@@ -39,34 +40,54 @@ func NewByteArchive(reader io.Reader) (*Archive, error) {
 
 // Parse will read out the archive to create a Docx struct which we then can modify to our needs.
 func (a *Archive) Parse() (*Docx, error) {
-	// extract files which we want to modify in Docx
 	var documentFile *zip.File
+	var headers []*zip.File
+	var footers []*zip.File
+
+	// extract the files in which we're interested
 	for _, f := range a.data.File {
+		log.Print(f.Name)
 		if f.Name == DocumentXmlPath {
 			documentFile = f
 		}
+		if HeaderPathRegex.MatchString(f.Name) {
+			headers = append(headers, f)
+		}
+		if FooterPathRegex.MatchString(f.Name) {
+			footers = append(footers, f)
+		}
 	}
 
-	// open files which we want to modify
 	if documentFile == nil {
 		return nil, fmt.Errorf("invalid docx archive format, %s missing", DocumentXmlPath)
 	}
-	readCloser, err := documentFile.Open()
-	if err != nil {
-		return nil, fmt.Errorf("unable to open document.xml: %s", err)
-	}
 
-	// read
-	docBytes, err := ioutil.ReadAll(readCloser)
-	if err != nil {
-		return nil, fmt.Errorf("unable to ReadAll: %s", err)
+	readZipFile := func(file *zip.File) []byte {
+		readCloser, err := file.Open()
+		if err != nil {
+			return nil
+		}
+		defer readCloser.Close()
+		fileBytes, err := ioutil.ReadAll(readCloser)
+		if err != nil {
+			return nil
+		}
+		return fileBytes
 	}
 
 	// create Docx struct on which we can perform our modifications
 	docx := &Docx{
 		originalPath: a.path,
 		files:        a.data.File,
-		documentXml:  docBytes,
+		documentXml:  readZipFile(documentFile),
+		headersXml: make(map[string][]byte, len(headers)),
+		footersXml: make(map[string][]byte, len(footers)),
+	}
+	for _, header := range headers {
+		docx.headersXml[header.Name] = readZipFile(header)
+	}
+	for _, footer := range footers {
+		docx.footersXml[footer.Name] = readZipFile(footer)
 	}
 
 	return docx, nil
