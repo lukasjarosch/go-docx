@@ -25,3 +25,13 @@ The placeholder may then be in two fragments for example `{the-` and `placeholde
 The naive approach therefore is not always working. To provide a way to replace placeholders, even if they are fragmented, is the purpose of this library.
 
 ### ➤ Getting Started
+All you need is to `go get github.com/lukasjarosch/go-docx`
+
+For some code, just go ahead and look into `./examples/simple/main.go`. 
+
+### ➤ How it works
+
+This section will give you a short overview of what's actually going on.
+And honenstly.. it's a much needed reference for my future self :D.
+
+**TODO** (lol)
