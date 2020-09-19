@@ -23,7 +23,7 @@ func main() {
 		"foo":                         "bar",
 	}
 
-	doc, err := docx.Open("./data/raw.docx")
+	doc, err := docx.Open("template.docx")
 	if err != nil {
 	    panic(err)
 	}
@@ -37,7 +37,7 @@ func main() {
 
 	log.Printf("replace took: %s", time.Since(startTime))
 
-	err = doc.WriteToFile("/tmp/test.docx")
+	err = doc.WriteToFile("replaced.docx")
 	if err != nil {
 		panic(err)
 	}
