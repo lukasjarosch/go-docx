@@ -2,7 +2,8 @@
 <p align="center">
    <b>Replace placeholders inside docx documents with speed and confidence.</b>
    
-   <sub>This project provides a simple and clean API to perform replacing of user-defined placeholders. Without the uncertainty that the placeholders may be ripped  aparty by the WordprocessingML engine used.</sub>
+   <p align="center"><sub>This project provides a simple and clean API to perform replacing of user-defined placeholders.   
+   Without the uncertainty that the placeholders may be ripped  aparty by the WordprocessingML engine used to create the document.</sub></p>
 </p>
 
 <p align="center">
