@@ -1,7 +1,8 @@
 <h1 align="center">go-docx</h1>
 <p align="center">
-   <b>go-docx</b> provides a way to replace all placeholders with confidence, even
-   if they are separated within the documents.
+   <b>Replace placeholders inside docx documents with speed and confidence.</b>
+   
+   <sub>This project provides a simple and clean API to perform replacing of user-defined placeholders. Without the uncertainty that the placeholders may be ripped  aparty by the WordprocessingML engine used.</sub>
 </p>
 
 <p align="center">
