@@ -114,10 +114,7 @@ func (parser *RunParser) findRuns() error {
 					tmpRun.StartTag.Start -= 1
 					singleElement = true
 				}
-
-				//log.Printf("%d: START: %s", docReader.Pos(), doc.DocumentBytes()[startRunTagStartPos:startRunTagEndPos])
 			}
-			break
 
 		case xml.EndElement:
 			if elem.Name.Local == "r" {
@@ -136,7 +133,6 @@ func (parser *RunParser) findRuns() error {
 				parser.runs = append(parser.runs, tmpRun)
 				tmpRun = &Run{}
 			}
-			break
 		}
 	}
 
@@ -175,7 +171,6 @@ func (parser *RunParser) findTextRuns() error {
 				run.HasText = true
 				run.Text.StartTag = TagPosition(docReader.Pos(), openTag)
 			}
-			break
 
 		case xml.EndElement:
 			if elem.Name.Local == "t" {
@@ -183,7 +178,6 @@ func (parser *RunParser) findTextRuns() error {
 				closeTag := "</w:t>"
 				run.Text.EndTag = TagPosition(docReader.Pos(), closeTag)
 			}
-			break
 		}
 	}
 

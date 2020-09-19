@@ -148,6 +148,11 @@ func ParsePlaceholders(runs DocumentRuns, docBytes []byte) (placeholders []*Plac
 	return placeholders
 }
 
+// parseFullPlaceholders will extract all complete placeholders inside the run given a open and close position.
+// The open and close positions are the positions of the Delimiters which must already be known at this point.
+// openPos and closePos are expected to be symmetrical (e.g. same length).
+// Example: openPos := []int{10,20,30}; closePos := []int{13, 23, 33}
+// The n-th elements inside openPos and closePos must be matching delimiter positions.
 func parseFullPlaceholders(run *Run, openPos, closePos []int) (placeholders []*Placeholder){
 	for i := 0; i < len(openPos); i++ {
 		start := openPos[i]
@@ -212,22 +217,6 @@ func (p PlaceholderFragment) String(docBytes []byte) string {
 		p.Position.Start, p.Position.End, docBytes[p.Run.Text.StartTag.End+p.Position.Start:p.Run.Text.StartTag.End+p.Position.End])
 }
 
-
-// FindDelimitedPlaceholders will search for the keys of the mapping with the delimiters added.
-// All found keys will be added to foundKeys on every occurrence.
-func FindDelimitedPlaceholders(plaintext string, placeholderMap PlaceholderMap) []string {
-	var foundKeys []string
-	for key, _ := range placeholderMap {
-		keyVal := AddPlaceholderDelimiter(key)
-		if strings.Contains(plaintext, keyVal) {
-			count := strings.Count(plaintext, keyVal)
-			for i := 0; i < count; i++ {
-				foundKeys = append(foundKeys, key)
-			}
-		}
-	}
-	return foundKeys
-}
 
 // AddPlaceholderDelimiter will wrap the given string with OpenDelimiter and CloseDelimiter.
 // If the given string is already a delimited placeholder, it is returned unchanged.

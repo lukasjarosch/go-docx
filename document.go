@@ -10,8 +10,19 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 )
 
+const (
+	DocumentXml = "word/document.xml"
+)
+
+var (
+	HeaderPathRegex = regexp.MustCompile(`word/header[0-9]*.xml`)
+	FooterPathRegex = regexp.MustCompile(`word/footer[0-9]*.xml`)
+)
+
+// Document exposes the main API of the library. It represents the actual docx document which is going to be modified.
 type Document struct {
 	path     string
 	docxFile *os.File
@@ -23,12 +34,11 @@ type Document struct {
 	headerFiles []string
 	// paths to all footer files inside the zip archive
 	footerFiles []string
-
-	runs []*Run
 }
 
-type FileMap map[string][]byte
 
+// Open will open and parse the file pointed to by path.
+// The file must be a valid docx file or an error is returned.
 func Open(path string) (*Document, error) {
 	fh, err := os.Open(path)
 	if err != nil {
@@ -59,6 +69,7 @@ func Open(path string) (*Document, error) {
 	return doc, nil
 }
 
+// ReplaceAll will iterate over all files and perform the replacement according to the PlaceholderMap.
 func (d *Document) ReplaceAll(placeholderMap PlaceholderMap) error {
 	for name, fileBytes := range d.files {
 		changedBytes, err := d.replace(placeholderMap, fileBytes)
@@ -74,6 +85,8 @@ func (d *Document) ReplaceAll(placeholderMap PlaceholderMap) error {
 	return nil	
 }
 
+// replace will create a parser on the given bytes, execute it and replace every placeholders found with the data
+// from the placeholderMap.
 func (d *Document) replace(placeholderMap PlaceholderMap, docBytes []byte) ([]byte,error) {
 	// parse the document, extracting run and text positions
 	parser := NewRunParser(docBytes)
@@ -100,6 +113,7 @@ func (d *Document) replace(placeholderMap PlaceholderMap, docBytes []byte) ([]by
 	return replacer.Bytes(), nil
 }
 
+// GetFile returns the content of the given fileName if it exists.
 func (d *Document) GetFile(fileName string) []byte {
 	if f, exists := d.files[fileName]; exists {
 		return f
@@ -107,6 +121,8 @@ func (d *Document) GetFile(fileName string) []byte {
 	return nil
 }
 
+// SetFile allows setting the file contents of the given file.
+// The fileName must be known, otherwise an error is returned.
 func (d *Document) SetFile(fileName string, fileBytes []byte) error {
 	if _, exists := d.files[fileName]; !exists {
 		return fmt.Errorf("unregistered file %s", fileName)
@@ -255,6 +271,9 @@ func (d *Document) Close() {
 	}
 }
 
+// FileMap is just a convenience type for the map of fileName => fileBytes
+type FileMap map[string][]byte
+
 // Write will try to write the bytes from the map into the given writer.
 func (fm FileMap) Write(writer io.Writer, filename string) error {
 	file, ok := fm[filename]
@@ -279,3 +298,4 @@ func readBytes(stream io.Reader) []byte {
 	}
 	return buf.Bytes()
 }
+
