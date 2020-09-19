@@ -8,4 +8,3 @@
 * **Simple**: The API exposed is kept to a minimum in order to stick to the purpose.
 * **Fast**: go-docx is fast since it operates directly on the byte contents instead mapping the XMLs to a custom data struct.
 * **Zero dependencies**: go-docx is build with the go stdlib only.
-* **Reliable**: go-docx will reliably replace placeholders inside the document.
