@@ -47,7 +47,7 @@ func (a *Archive) Parse() (*Docx, error) {
 	// extract the files in which we're interested
 	for _, f := range a.data.File {
 		log.Print(f.Name)
-		if f.Name == DocumentXmlPath {
+		if f.Name == DocumentXml {
 			documentFile = f
 		}
 		if HeaderPathRegex.MatchString(f.Name) {
@@ -59,7 +59,7 @@ func (a *Archive) Parse() (*Docx, error) {
 	}
 
 	if documentFile == nil {
-		return nil, fmt.Errorf("invalid docx archive format, %s missing", DocumentXmlPath)
+		return nil, fmt.Errorf("invalid docx archive format, %s missing", DocumentXml)
 	}
 
 	readZipFile := func(file *zip.File) []byte {

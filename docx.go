@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	DocumentXmlPath = "word/document.xml"
+	DocumentXml = "word/document.xml"
 )
 
 var (
@@ -131,14 +131,14 @@ func (d *Docx) Write(writer io.Writer) error {
 			}
 		}
 
-		if file.Name == DocumentXmlPath {
+		if file.Name == DocumentXml {
 			if err := write(fileWriter, file.Name, d.documentXml); err != nil {
 				return err
 			}
 		}
 
 		// default case, open the original file which we got from the archive and copy the bytes into the new archive
-		if file.Name != DocumentXmlPath &&
+		if file.Name != DocumentXml &&
 			!HeaderPathRegex.MatchString(file.Name) &&
 			!FooterPathRegex.MatchString(file.Name)	{
 			readCloser, err := file.Open()
