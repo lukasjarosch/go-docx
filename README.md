@@ -29,7 +29,7 @@ All you need is to `go get github.com/lukasjarosch/go-docx`
 
 ```go
 func main() {
-    // replaceMap is a key-value map whereas the keys 
+        // replaceMap is a key-value map whereas the keys 
 	// represent the placeholders without the delimiters
 	replaceMap := docx.PlaceholderMap{
 		"key":                         "REPLACE some more",
@@ -43,19 +43,19 @@ func main() {
 		"yet-another_placeholder":     "REPLACE",
 	}
 
-    // read and parse the template docx
+        // read and parse the template docx
 	doc, err := docx.Open("template.docx")
 	if err != nil {
 	    panic(err)
 	}
 
-    // replace the keys with values from replaceMap
+        // replace the keys with values from replaceMap
 	err = doc.ReplaceAll(replaceMap)
 	if err != nil {
 	    panic(err)
 	}
 
-    // write out a new file
+        // write out a new file
 	err = doc.WriteToFile("replaced.docx")
 	if err != nil {
 		panic(err)
