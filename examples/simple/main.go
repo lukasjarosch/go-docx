@@ -41,5 +41,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	log.Printf("everything took: %s", time.Since(startTime))
 }
 
