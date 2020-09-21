@@ -28,11 +28,13 @@
 
 ---
 
-### ➤ Table of Contents
+### Table of Contents
 - [Purpose](#-purpose)
 - [Getting Started](#-getting-started)
 - [How it works](#-how-it-works)
 - [License](#-license)
+
+---
 
 ### ➤ Purpose
 The task at hand was to replace a set of user-defined placeholders inside a docx document archive with calculated values.
