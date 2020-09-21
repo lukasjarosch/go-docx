@@ -1,6 +1,12 @@
 <h1 align="center">go-docx</h1>
 
+<p align="center">
+	
+	
 ![test](https://github.com/lukasjarosch/go-docx/workflows/test/badge.svg)
+
+
+</p>
 
 <p align="center">
    <b>Replace placeholders inside docx documents with speed and confidence.</b>
