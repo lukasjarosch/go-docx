@@ -27,7 +27,41 @@ The naive approach therefore is not always working. To provide a way to replace 
 ### ➤ Getting Started
 All you need is to `go get github.com/lukasjarosch/go-docx`
 
-For some code, just go ahead and look into `./examples/simple/main.go`. 
+```go
+func main() {
+    // replaceMap is a key-value map whereas the keys 
+	// represent the placeholders without the delimiters
+	replaceMap := docx.PlaceholderMap{
+		"key":                         "REPLACE some more",
+		"key-with-dash":               "REPLACE",
+		"key-with-dashes":             "REPLACE",
+		"key with space":              "REPLACE",
+		"key_with_underscore":         "REPLACE",
+		"multiline":                   "REPLACE",
+		"key.with.dots":               "REPLACE",
+		"mixed-key.separator_styles#": "REPLACE",
+		"yet-another_placeholder":     "REPLACE",
+	}
+
+    // read and parse the template docx
+	doc, err := docx.Open("template.docx")
+	if err != nil {
+	    panic(err)
+	}
+
+    // replace the keys with values from replaceMap
+	err = doc.ReplaceAll(replaceMap)
+	if err != nil {
+	    panic(err)
+	}
+
+    // write out a new file
+	err = doc.WriteToFile("replaced.docx")
+	if err != nil {
+		panic(err)
+	}
+}
+```
 
 ### ➤ How it works
 This section will give you a short overview of what's actually going on.
