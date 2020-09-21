@@ -12,8 +12,8 @@ import (
 // It is specified with the <w:r> element.
 // In our case the run is specified by four byte positions (start and end tag).
 type Run struct {
-	StartTag Position
-	EndTag   Position
+	OpenTag  Position
+	CloseTag Position
 	Text     TextRun
 	HasText  bool
 }
@@ -104,14 +104,14 @@ func (parser *RunParser) findRuns() error {
 			if elem.Name.Local == "r" {
 				openTag := "<w:r>"
 				// docReader.Pos() points to the '>' of the opening 'r' element (<w:r>)
-				tmpRun.StartTag = TagPosition(docReader.Pos(), openTag)
+				tmpRun.OpenTag = TagPosition(docReader.Pos(), openTag)
 
 				// special case, an empty tag: <w:r/> is also considered to be a start element
 				// the tag is 1 byte longer which needs to be addressed
 				// since there is no real end tag, the element is marked for the EndElement case to handle it appropriately
-				tagStr := string(parser.doc[tmpRun.StartTag.Start:tmpRun.StartTag.End])
+				tagStr := string(parser.doc[tmpRun.OpenTag.Start:tmpRun.OpenTag.End])
 				if strings.Contains(tagStr, "/>") {
-					tmpRun.StartTag.Start -= 1
+					tmpRun.OpenTag.Start -= 1
 					singleElement = true
 				}
 			}
@@ -120,16 +120,16 @@ func (parser *RunParser) findRuns() error {
 			if elem.Name.Local == "r" {
 				closeTag := "</w:r>"
 
-				// if the run is a single element (<w:r/>), the values of the StartTag are already correct and must
+				// if the run is a single element (<w:r/>), the values of the OpenTag are already correct and must
 				// be identical.
 				if singleElement {
 					singleElement = false
-					tmpRun.EndTag = tmpRun.StartTag
+					tmpRun.CloseTag = tmpRun.OpenTag
 					parser.runs = append(parser.runs, tmpRun)
 					tmpRun = &Run{}
 					break
 				}
-				tmpRun.EndTag = TagPosition(docReader.Pos(), closeTag)
+				tmpRun.CloseTag = TagPosition(docReader.Pos(), closeTag)
 				parser.runs = append(parser.runs, tmpRun)
 				tmpRun = &Run{}
 			}
@@ -147,7 +147,7 @@ func (parser *RunParser) findTextRuns() error {
 	// based on the current position, find out in which run we're at
 	inRun := func(pos int64) *Run {
 		for _, run := range parser.runs {
-			if run.StartTag.Start < pos && pos < run.EndTag.End {
+			if run.OpenTag.Start < pos && pos < run.CloseTag.End {
 				return run
 			}
 		}

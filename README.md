@@ -30,8 +30,47 @@ All you need is to `go get github.com/lukasjarosch/go-docx`
 For some code, just go ahead and look into `./examples/simple/main.go`. 
 
 ### ➤ How it works
-
 This section will give you a short overview of what's actually going on.
 And honenstly.. it's a much needed reference for my future self :D.
 
-**TODO** (lol)
+#### Overview
+The project does rely on some invariants of the WordprocessingML spec which defines the docx structure.
+A good overview over the spec can be found on: [officeopenxml.com](http://officeopenxml.com/anatomyofOOXML.php).
+
+Since this project aims to work only on text within the document, it currently only focuses on the **runs** (`<w:r>` element).
+A run *always* encloses a **text** (`<w:t>` element) thus finding all runs inside the docx is the first step. Keep in
+mind that a run does not need to have a text element. It can also contain an image for example. But all text
+literals will always be inside a run, within their respective text tags.
+
+To illustrate that, here is how this might look inside the document.xml.
+
+```xml
+ <w:p>
+    <w:r>
+        <w:t>{key-with-dashes}</w:t>
+    </w:r>
+</w:p>
+```
+One can clearly see that replacing the `{key-with-dashes}` placeholder is quite simple. 
+Just do a `strings.Replace()`, right? **Wrong!**
+
+Although this might work on 70-80% of the time, it will not work reliably.
+The reason is how the WordprocessingML spec is set-up. It will fragment text-literals 
+based on many different circumstances. 
+
+For example if you added half of the placeholder, saved
+and quit Word, and then add the second half of the placeholder, it might happen (in order to preserve session history), that the placeholder will look something like that (simplified).
+
+```xml
+ <w:p>
+    <w:r>
+        <w:t>{key-</w:t>
+    </w:r>
+    <w:r>
+        <w:t>with-dashes}</w:t>
+    </w:r>
+</w:p>
+```
+
+As you can clearly see, doing a simple replace doesn't do it for this case.
+

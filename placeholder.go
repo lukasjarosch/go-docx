@@ -176,7 +176,7 @@ func parseFullPlaceholders(run *Run, openPos, closePos []int) (placeholders []*P
 // apart according to the WordprocessingML spec. So it will most likely occur, that
 // the placeholders are split into multiple fragments (e.g. '{foo' and '-bar}').
 type PlaceholderFragment struct {
-	Position Position // Position of the actual fragment within the run text. 0 == (Run.Text.StartTag.End + 1)
+	Position Position // Position of the actual fragment within the run text. 0 == (Run.Text.OpenTag.End + 1)
 	Number   int      // numbering fragments for ease of use
 	Run      *Run
 }
@@ -210,8 +210,8 @@ func (p PlaceholderFragment) TextLength(docBytes []byte) int64 {
 func (p PlaceholderFragment) String(docBytes []byte) string {
 	format := "fragment in run [%d:%d] '%s' - [%d:%d] '%s'; run-text [%d:%d] '%s' - [%d:%d] '%s'; positions: [%d:%d] '%s'"
 	return fmt.Sprintf(format,
-		p.Run.StartTag.Start, p.Run.StartTag.End, docBytes[p.Run.StartTag.Start:p.Run.StartTag.End],
-		p.Run.EndTag.Start, p.Run.EndTag.End, docBytes[p.Run.EndTag.Start:p.Run.EndTag.End],
+		p.Run.OpenTag.Start, p.Run.OpenTag.End, docBytes[p.Run.OpenTag.Start:p.Run.OpenTag.End],
+		p.Run.CloseTag.Start, p.Run.CloseTag.End, docBytes[p.Run.CloseTag.Start:p.Run.CloseTag.End],
 		p.Run.Text.StartTag.Start, p.Run.Text.StartTag.End, docBytes[p.Run.Text.StartTag.Start:p.Run.Text.StartTag.End],
 		p.Run.Text.EndTag.Start, p.Run.Text.EndTag.End, docBytes[p.Run.Text.EndTag.Start:p.Run.Text.EndTag.End],
 		p.Position.Start, p.Position.End, docBytes[p.Run.Text.StartTag.End+p.Position.Start:p.Run.Text.StartTag.End+p.Position.End])

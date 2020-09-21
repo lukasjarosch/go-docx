@@ -92,8 +92,8 @@ func (r *Replacer) replaceFragmentValue(fragment *PlaceholderFragment, value str
 	// shift everything which is after the replaced value for this fragment
 	fragment.Run.Text.EndTag.Start += deltaLength
 	fragment.Run.Text.EndTag.End += deltaLength
-	fragment.Run.EndTag.Start += deltaLength
-	fragment.Run.EndTag.End += deltaLength
+	fragment.Run.CloseTag.Start += deltaLength
+	fragment.Run.CloseTag.End += deltaLength
 	fragment.Position.End += deltaLength
 
 	r.document = docBytes
@@ -115,8 +115,8 @@ func (r *Replacer) cutFragment(fragment *PlaceholderFragment) {
 	// adjust fragment after cut
 	fragment.Run.Text.EndTag.Start -= cutLength
 	fragment.Run.Text.EndTag.End -= cutLength
-	fragment.Run.EndTag.Start -= cutLength
-	fragment.Run.EndTag.End -= cutLength
+	fragment.Run.CloseTag.Start -= cutLength
+	fragment.Run.CloseTag.End -= cutLength
 	fragment.Position.End = fragment.Position.Start
 
 	r.document = docBytes
@@ -168,10 +168,10 @@ func (r *Replacer) shiftFollowingFragments(fromFragment *PlaceholderFragment, de
 	// shift all fragments following fromFragment and are in a different Run
 	for _, frag := range followingFragments {
 		followingFragment := frag
-		followingFragment.Run.StartTag.Start += deltaLength
-		followingFragment.Run.StartTag.End += deltaLength
-		followingFragment.Run.EndTag.Start += deltaLength
-		followingFragment.Run.EndTag.End += deltaLength
+		followingFragment.Run.OpenTag.Start += deltaLength
+		followingFragment.Run.OpenTag.End += deltaLength
+		followingFragment.Run.CloseTag.Start += deltaLength
+		followingFragment.Run.CloseTag.End += deltaLength
 		followingFragment.Run.Text.StartTag.Start += deltaLength
 		followingFragment.Run.Text.StartTag.End += deltaLength
 		followingFragment.Run.Text.EndTag.Start += deltaLength
@@ -179,11 +179,11 @@ func (r *Replacer) shiftFollowingFragments(fromFragment *PlaceholderFragment, de
 	}
 }
 
-// fragmentsFromPosition will return all fragments where: fragment.Run.StartTag.Start > startingFrom
+// fragmentsFromPosition will return all fragments where: fragment.Run.OpenTag.Start > startingFrom
 func (r *Replacer) fragmentsFromPosition(startingFrom int64) (found []*PlaceholderFragment) {
 	for _, placeholder := range r.placeholders {
 		for _, fragment := range placeholder.Fragments {
-			if fragment.Run.StartTag.Start > startingFrom {
+			if fragment.Run.OpenTag.Start > startingFrom {
 				found = append(found, fragment)
 				continue
 			}
