@@ -1,12 +1,5 @@
-name: golangci-lint
-on:
-  push:
-    tags:
-      - v*
-    branches:
-      - master
-      - develop
-  pull_request:
+name: golang
+on: [push, pull_request]
 jobs:
   golangci:
     name: lint
@@ -18,3 +11,15 @@ jobs:
         with:
           # Required: the version of golangci-lint is required and must be specified without patch version: we always use the latest patch version.
           version: v1.31
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+          uses: actions/setup-go@v2
+          with:
+            go-version: ${{ matrix.go-version }}
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Test
+        run: go test ./...
