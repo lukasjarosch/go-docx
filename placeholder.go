@@ -45,6 +45,8 @@ func (p Placeholder) EndPos() int64 {
 	return p.Fragments[end].Run.Text.StartTag.End + p.Fragments[end].Position.End
 }
 
+// ParsePlaceholders will, given the document run positions and the bytes, parse out all placeholders including
+// their fragments.
 func ParsePlaceholders(runs DocumentRuns, docBytes []byte) (placeholders []*Placeholder) {
 	// tmp vars used to preserve state across iterations
 	unclosedPlaceholder := new(Placeholder)
@@ -72,7 +74,7 @@ func ParsePlaceholders(runs DocumentRuns, docBytes []byte) (placeholders []*Plac
 
 		// simple case: only full placeholders inside the run
 		if (len(openPos) == len(closePos)) && len(openPos) != 0 {
-			placeholders = append(placeholders, parseFullPlaceholders(run, openPos, closePos)...)
+			placeholders = append(placeholders, assembleFullPlaceholders(run, openPos, closePos)...)
 			continue
 		}
 
@@ -84,7 +86,7 @@ func ParsePlaceholders(runs DocumentRuns, docBytes []byte) (placeholders []*Plac
 		if len(openPos) > len(closePos) {
 			// merge full placeholders in the run, leaving out the last openPos since
 			// we know that the one is left over and must be handled separately below
-			placeholders = append(placeholders, parseFullPlaceholders(run, openPos[:len(openPos)-1], closePos)...)
+			placeholders = append(placeholders, assembleFullPlaceholders(run, openPos[:len(openPos)-1], closePos)...)
 
 			// add the unclosed part of the placeholder to a tmp placeholder var
 			unclosedOpenPos := openPos[len(openPos)-1]
@@ -107,7 +109,7 @@ func ParsePlaceholders(runs DocumentRuns, docBytes []byte) (placeholders []*Plac
 		if len(openPos) < len(closePos) {
 			// merge full placeholders in the run, leaving out the last closePos since
 			// we know that the one is left over and must be handled separately below
-			placeholders = append(placeholders, parseFullPlaceholders(run, openPos, closePos[:len(closePos) - 1])...)
+			placeholders = append(placeholders, assembleFullPlaceholders(run, openPos, closePos[:len(closePos) - 1])...)
 
 			// there is only a closePos and no open pos
 			if len(closePos) == 1 {
@@ -145,15 +147,26 @@ func ParsePlaceholders(runs DocumentRuns, docBytes []byte) (placeholders []*Plac
 			}
 		}
 	}
+
+	// in order to catch false positives, ensure that all placeholders have BOTH delimiters
+	// if a placeholder only has one, remove it since it cannot be right.
+	for i, placeholder := range placeholders {
+		text := placeholder.Text(docBytes)
+		if !strings.ContainsRune(text, OpenDelimiter) ||
+			!strings.ContainsRune(text, CloseDelimiter) {
+			placeholders = append(placeholders[:i], placeholders[i+1:]...)
+		}
+	}
+
 	return placeholders
 }
 
-// parseFullPlaceholders will extract all complete placeholders inside the run given a open and close position.
+// assembleFullPlaceholders will extract all complete placeholders inside the run given a open and close position.
 // The open and close positions are the positions of the Delimiters which must already be known at this point.
 // openPos and closePos are expected to be symmetrical (e.g. same length).
 // Example: openPos := []int{10,20,30}; closePos := []int{13, 23, 33}
 // The n-th elements inside openPos and closePos must be matching delimiter positions.
-func parseFullPlaceholders(run *Run, openPos, closePos []int) (placeholders []*Placeholder){
+func assembleFullPlaceholders(run *Run, openPos, closePos []int) (placeholders []*Placeholder){
 	for i := 0; i < len(openPos); i++ {
 		start := openPos[i]
 		end := closePos[i] + 1 // +1 is required to include the closing delimiter in the text

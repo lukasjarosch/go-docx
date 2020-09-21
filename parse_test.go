@@ -13,7 +13,6 @@ var (
 )
 
 func TestRunParser_FindRuns(t *testing.T) {
-
 	docBytes := readFile(t, testFile)
 
 	sut := NewRunParser(docBytes)
@@ -48,7 +47,7 @@ func TestRun_GetText(t *testing.T) {
 	sut := NewRunParser(docBytes)
 	err := sut.Execute()
 	if err != nil {
-		t.Errorf("parser.findRuns failed: %s", err)
+		t.Errorf("parser.Execute failed: %s", err)
 	}
 
 	for _, expectedText := range expectedTexts {
@@ -81,10 +80,9 @@ func TestRun_WithText(t *testing.T) {
 	if is != exp {
 		t.Errorf("parser returned %d runs with text, expected %d", is, exp)
 	}
-	t.Logf("parser returned %d runs with text, expected %d", is, exp)
 }
 
-func readFile(t *testing.T, path string) []byte {
+func readFile(t testing.TB, path string) []byte {
 	f, err := os.Open(path)
 	if err != nil {
 		t.Error(err)
@@ -94,7 +92,6 @@ func readFile(t *testing.T, path string) []byte {
 	if n == 0 {
 		t.Errorf("nothing was read from test file %s", path)
 	}
-	t.Logf("read %d bytes from %s", n, path)
 
 	return b
 }
