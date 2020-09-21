@@ -26,6 +26,14 @@
 * **Fast**: go-docx is fast since it operates directly on the byte contents instead mapping the XMLs to a custom data struct.
 * **Zero dependencies**: go-docx is build with the go stdlib only, no external dependencies.
 
+---
+
+### ➤ Table of Contents
+- [Purpose](#-purpose)
+- [Getting Started](#-getting-started)
+- [How it works](#-how-it-works)
+- [License](#-license)
+
 ### ➤ Purpose
 The task at hand was to replace a set of user-defined placeholders inside a docx document archive with calculated values.
 All current implementations in Golang which solve this problem use a naive approach by attempting to `strings.Replace()` the placeholders.
@@ -160,3 +168,5 @@ All the steps taken in 5. require cumbersome shifting of the offsets. This is th
 where the most debugging happened (gosh, so many offsets). The given explanation is definitely enough
 to grasp the concept, leaving out the messy bits.
     
+### ➤ License
+This software is licensed under the [MIT license](http://opensource.org/licenses/mit-license.php).
