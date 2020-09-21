@@ -24,7 +24,7 @@
 
 * **Simple**: The API exposed is kept to a minimum in order to stick to the purpose.
 * **Fast**: go-docx is fast since it operates directly on the byte contents instead mapping the XMLs to a custom data struct.
-* **Zero dependencies**: go-docx is build with the go stdlib only.
+* **Zero dependencies**: go-docx is build with the go stdlib only, no external dependencies.
 
 ### ➤ Purpose
 The task at hand was to replace a set of user-defined placeholders inside a docx document archive with calculated values.
