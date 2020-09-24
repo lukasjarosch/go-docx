@@ -51,7 +51,7 @@ func Open(path string) (*Document, error) {
 
 	doc := &Document{
 		docxFile: fh,
-		zipFile:  rc,
+		zipFile:  &rc.Reader,
 		path:     path,
 		files:    make(FileMap),
 	}
