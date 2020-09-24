@@ -125,7 +125,7 @@ func (d *Document) replace(placeholderMap PlaceholderMap, docBytes []byte) ([]by
 	replacer := NewReplacer(docBytes, placeholders)
 
 	for key, value := range placeholderMap {
-		err := replacer.Replace(key, value.(string))
+		err := replacer.Replace(key, fmt.Sprint(value))
 		if err != nil {
 			if errors.Is(err, ErrPlaceholderNotFound) {
 				continue
