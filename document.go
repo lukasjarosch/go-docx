@@ -292,10 +292,6 @@ func (d *Document) Close() {
 			log.Fatal(err)
 		}
 	}
-	err = d.zipFile.Close()
-	if err != nil {
-		log.Fatal(err)
-	}
 }
 
 // FileMap is just a convenience type for the map of fileName => fileBytes
