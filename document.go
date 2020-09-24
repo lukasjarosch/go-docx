@@ -26,7 +26,7 @@ var (
 type Document struct {
 	path     string
 	docxFile *os.File
-	zipFile  *zip.ReadCloser
+	zipFile  *zip.Reader
 
 	// all files from the zip archive which we're interested in
 	files FileMap
@@ -35,7 +35,6 @@ type Document struct {
 	// paths to all footer files inside the zip archive
 	footerFiles []string
 }
-
 
 // Open will open and parse the file pointed to by path.
 // The file must be a valid docx file or an error is returned.
@@ -69,6 +68,32 @@ func Open(path string) (*Document, error) {
 	return doc, nil
 }
 
+func OpenBytes(b []byte) (*Document, error) {
+	rc, err := zip.NewReader(bytes.NewReader(b), int64(len(b)))
+
+	if err != nil {
+		return nil, fmt.Errorf("unable to open zip reader: %s", err)
+	}
+
+	doc := &Document{
+		docxFile: nil,
+		zipFile:  rc,
+		path:     "",
+		files:    make(FileMap),
+	}
+
+	if err := doc.parseArchive(); err != nil {
+		return nil, fmt.Errorf("error parsing document: %s", err)
+	}
+
+	// a valid docx document should really contain a document.xml :)
+	if _, exists := doc.files[DocumentXml]; !exists {
+		return nil, fmt.Errorf("invalid docx archive, %s is missing", DocumentXml)
+	}
+
+	return doc, nil
+}
+
 // ReplaceAll will iterate over all files and perform the replacement according to the PlaceholderMap.
 func (d *Document) ReplaceAll(placeholderMap PlaceholderMap) error {
 	for name, fileBytes := range d.files {
@@ -79,15 +104,15 @@ func (d *Document) ReplaceAll(placeholderMap PlaceholderMap) error {
 
 		err = d.SetFile(name, changedBytes)
 		if err != nil {
-		    return err
+			return err
 		}
 	}
-	return nil	
+	return nil
 }
 
 // replace will create a parser on the given bytes, execute it and replace every placeholders found with the data
 // from the placeholderMap.
-func (d *Document) replace(placeholderMap PlaceholderMap, docBytes []byte) ([]byte,error) {
+func (d *Document) replace(placeholderMap PlaceholderMap, docBytes []byte) ([]byte, error) {
 	// parse the document, extracting run and text positions
 	parser := NewRunParser(docBytes)
 	err := parser.Execute()
@@ -261,9 +286,11 @@ func (d *Document) Write(writer io.Writer) error {
 
 // Close will close everything :)
 func (d *Document) Close() {
-	err := d.docxFile.Close()
-	if err != nil {
-		log.Fatal(err)
+	if d.docxFile != nil {
+		err := d.docxFile.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	err = d.zipFile.Close()
 	if err != nil {
@@ -298,4 +325,3 @@ func readBytes(stream io.Reader) []byte {
 	}
 	return buf.Bytes()
 }
-
