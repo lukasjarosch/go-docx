@@ -34,7 +34,6 @@ func NewReplacer(docBytes []byte, placeholder []*Placeholder) *Replacer {
 	}
 }
 
-
 // Replace will replace all occurrences of the placeholderKey with the given value.
 // The function is synced with a mutex as it is not concurrency safe.
 func (r *Replacer) Replace(placeholderKey string, value string) error {

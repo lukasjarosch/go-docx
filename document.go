@@ -11,6 +11,9 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
+
+	"golang.org/x/net/html"
 )
 
 const (
@@ -22,7 +25,9 @@ var (
 	FooterPathRegex = regexp.MustCompile(`word/footer[0-9]*.xml`)
 )
 
-// Document exposes the main API of the library. It represents the actual docx document which is going to be modified.
+// Document exposes the main API of the library.  It represents the actual docx document which is going to be modified.
+// Although a 'docx' document actually consists of multiple xml files, that fact is not exposed via the Document API.
+// All actions on the Document propagate through the files of the docx-zip-archive.
 type Document struct {
 	path     string
 	docxFile *os.File
@@ -34,6 +39,12 @@ type Document struct {
 	headerFiles []string
 	// paths to all footer files inside the zip archive
 	footerFiles []string
+	// The document contains multiple files which eventually need a parser each.
+	// The map key is the file path inside the document to which the parser belongs.
+	runParsers map[string]*RunParser
+
+	filePlaceholders map[string][]*Placeholder
+	fileReplacers    map[string]*Replacer
 }
 
 // Open will open and parse the file pointed to by path.
@@ -49,25 +60,13 @@ func Open(path string) (*Document, error) {
 		return nil, fmt.Errorf("unable to open zip reader: %s", err)
 	}
 
-	doc := &Document{
-		docxFile: fh,
-		zipFile:  &rc.Reader,
-		path:     path,
-		files:    make(FileMap),
-	}
-
-	if err := doc.parseArchive(); err != nil {
-		return nil, fmt.Errorf("error parsing document: %s", err)
-	}
-
-	// a valid docx document should really contain a document.xml :)
-	if _, exists := doc.files[DocumentXml]; !exists {
-		return nil, fmt.Errorf("invalid docx archive, %s is missing", DocumentXml)
-	}
-
-	return doc, nil
+	return newDocument(&rc.Reader, path, fh)
 }
 
+// OpenBytes allows to create a Document from a byte slice.
+// It behaves just like Open().
+//
+// Note: In this case, the docxFile property will be nil!
 func OpenBytes(b []byte) (*Document, error) {
 	rc, err := zip.NewReader(bytes.NewReader(b), int64(len(b)))
 
@@ -75,11 +74,24 @@ func OpenBytes(b []byte) (*Document, error) {
 		return nil, fmt.Errorf("unable to open zip reader: %s", err)
 	}
 
+	return newDocument(rc, "", nil)
+}
+
+// newDocument will create a new document struct given the zipFile.
+// The params 'path' and 'docxFile' may be empty/nil in case the document is created from a byte source directly.
+//
+// newDocument will parse the docx archive and validate that at least a 'document.xml' exists.
+// If 'word/document.xml' is missing, an error is returned since the docx cannot be correct.
+// Then all files are parsed for their runs before returning the new document.
+func newDocument(zipFile *zip.Reader, path string, docxFile *os.File) (*Document, error) {
 	doc := &Document{
-		docxFile: nil,
-		zipFile:  rc,
-		path:     "",
-		files:    make(FileMap),
+		docxFile:         docxFile,
+		zipFile:          zipFile,
+		path:             path,
+		files:            make(FileMap),
+		runParsers:       make(map[string]*RunParser),
+		filePlaceholders: make(map[string][]*Placeholder),
+		fileReplacers:    make(map[string]*Replacer),
 	}
 
 	if err := doc.parseArchive(); err != nil {
@@ -91,13 +103,28 @@ func OpenBytes(b []byte) (*Document, error) {
 		return nil, fmt.Errorf("invalid docx archive, %s is missing", DocumentXml)
 	}
 
+	// parse all files
+	for name, data := range doc.files {
+
+		// find all runs
+		doc.runParsers[name] = NewRunParser(data)
+		err := doc.runParsers[name].Execute()
+		if err != nil {
+			return nil, err
+		}
+
+		// parse placeholders and initialize replacers
+		placeholder := ParsePlaceholders(doc.runParsers[name].Runs(), data)
+		doc.filePlaceholders[name] = placeholder
+		doc.fileReplacers[name] = NewReplacer(data, placeholder)
+	}
 	return doc, nil
 }
 
 // ReplaceAll will iterate over all files and perform the replacement according to the PlaceholderMap.
 func (d *Document) ReplaceAll(placeholderMap PlaceholderMap) error {
-	for name, fileBytes := range d.files {
-		changedBytes, err := d.replace(placeholderMap, fileBytes)
+	for name, _ := range d.files {
+		changedBytes, err := d.replace(placeholderMap, name)
 		if err != nil {
 			return err
 		}
@@ -110,19 +137,30 @@ func (d *Document) ReplaceAll(placeholderMap PlaceholderMap) error {
 	return nil
 }
 
+// Replace will attempt to replace the given key with the value in every file.
+func (d *Document) Replace(key, value string) error {
+	for name, _ := range d.files {
+		changedBytes, err := d.replace(PlaceholderMap{key: value}, name)
+		if err != nil {
+			return err
+		}
+		err = d.SetFile(name, changedBytes)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // replace will create a parser on the given bytes, execute it and replace every placeholders found with the data
 // from the placeholderMap.
-func (d *Document) replace(placeholderMap PlaceholderMap, docBytes []byte) ([]byte, error) {
-	// parse the document, extracting run and text positions
-	parser := NewRunParser(docBytes)
-	err := parser.Execute()
-	if err != nil {
-		return nil, err
+func (d *Document) replace(placeholderMap PlaceholderMap, file string) ([]byte, error) {
+	if _, ok := d.runParsers[file]; !ok {
+		return nil, fmt.Errorf("no parser for file %s", file)
 	}
-
-	// use the parsed runs to find all placeholders
-	placeholders := ParsePlaceholders(parser.Runs(), docBytes)
-	replacer := NewReplacer(docBytes, placeholders)
+	placeholderCount := d.countPlaceholders(file, placeholderMap)
+	placeholders := d.filePlaceholders[file]
+	replacer := d.fileReplacers[file]
 
 	for key, value := range placeholderMap {
 		err := replacer.Replace(key, fmt.Sprint(value))
@@ -135,8 +173,75 @@ func (d *Document) replace(placeholderMap PlaceholderMap, docBytes []byte) ([]by
 		}
 	}
 
+	// ensure that all placeholders have been replaced
+	if placeholderCount != replacer.ReplaceCount {
+		return nil, fmt.Errorf("not all placeholders were replaced, want=%d, have=%d", placeholderCount, replacer.ReplaceCount)
+	}
+
+	d.fileReplacers[file] = replacer
+	d.filePlaceholders[file] = placeholders
 
 	return replacer.Bytes(), nil
+}
+
+// Runs returns all runs from all parsed files.
+func (d *Document) Runs() (runs []*Run) {
+	for _, parser := range d.runParsers {
+		runs = append(runs, parser.Runs()...)
+	}
+	return runs
+}
+
+// Placeholders returns all placeholders from the docx document.
+func (d *Document) Placeholders() (placeholders []*Placeholder) {
+	for _, p := range d.filePlaceholders {
+		placeholders = append(placeholders, p...)
+	}
+	return placeholders
+}
+
+// countPlaceholders will return the total count of placeholders from the placeholderMap in the given data.
+// Reoccurring placeholders are also counted multiple times.
+func (d *Document) countPlaceholders(file string, placeholderMap PlaceholderMap) int {
+	data := d.GetFile(file)
+	plaintext := d.stripXmlTags(string(data))
+	var placeholderCount int
+	for key, _ := range placeholderMap {
+		placeholder := AddPlaceholderDelimiter(key)
+
+		count := strings.Count(plaintext, placeholder)
+		if count > 0 {
+			placeholderCount += count
+		}
+	}
+	return placeholderCount
+}
+
+// stripXmlTags is a stdlib way of stripping out all xml tags using the html.Tokenizer.
+// The returned string will be everything except the tags.
+func (d *Document) stripXmlTags(data string) string {
+	var output string
+	tokenizer := html.NewTokenizer(strings.NewReader(data))
+	prevToken := tokenizer.Token()
+loop:
+	for {
+		tok := tokenizer.Next()
+		switch {
+		case tok == html.ErrorToken:
+			break loop // End of the document,  done
+		case tok == html.StartTagToken:
+			prevToken = tokenizer.Token()
+		case tok == html.TextToken:
+			if prevToken.Data == "script" {
+				continue
+			}
+			TxtContent := strings.TrimSpace(html.UnescapeString(string(tokenizer.Text())))
+			if len(TxtContent) > 0 {
+				output += TxtContent
+			}
+		}
+	}
+	return output
 }
 
 // GetFile returns the content of the given fileName if it exists.
@@ -190,7 +295,6 @@ func (d *Document) parseArchive() error {
 			d.footerFiles = append(d.footerFiles, file.Name)
 		}
 	}
-
 	return nil
 }
 
@@ -281,7 +385,6 @@ func (d *Document) Write(writer io.Writer) error {
 			return fmt.Errorf("unable to close reader for %s: %s", zipFile.Name, err)
 		}
 	}
-
 	return nil
 }
 
