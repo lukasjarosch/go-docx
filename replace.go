@@ -143,7 +143,7 @@ func (r *Replacer) shiftFollowingFragments(fromFragment *PlaceholderFragment, de
 			continue
 		}
 
-		// fragment sharing the run is after fromFragment and thus only the position needs to be adjusted
+		// fragment in the same run is after fromFragment and thus only the position needs to be adjusted
 		fragment.Position.Start += deltaLength
 		fragment.Position.End += deltaLength
 	}
@@ -165,8 +165,23 @@ func (r *Replacer) shiftFollowingFragments(fromFragment *PlaceholderFragment, de
 		}
 	}
 
+	// we need to keep track of which runs were already modified.
+	// This is important since there may be following fragments which share a run
+	var modifiedRuns []*Run
+	isAlreadyModified := func(r *Run) bool {
+		for _, run := range modifiedRuns {
+			if run == r {
+				return true
+			}
+		}
+		return false
+	}
+
 	// shift all fragments following fromFragment and are in a different Run
 	for _, frag := range followingFragments {
+		if isAlreadyModified(frag.Run) {
+			continue
+		}
 		followingFragment := frag
 		followingFragment.Run.OpenTag.Start += deltaLength
 		followingFragment.Run.OpenTag.End += deltaLength
@@ -176,6 +191,7 @@ func (r *Replacer) shiftFollowingFragments(fromFragment *PlaceholderFragment, de
 		followingFragment.Run.Text.StartTag.End += deltaLength
 		followingFragment.Run.Text.EndTag.Start += deltaLength
 		followingFragment.Run.Text.EndTag.End += deltaLength
+		modifiedRuns = append(modifiedRuns, followingFragment.Run)
 	}
 }
 

@@ -54,7 +54,7 @@ func ParsePlaceholders(runs DocumentRuns, docBytes []byte) (placeholders []*Plac
 
 	for _, run := range runs.WithText() {
 		runText := run.GetText(docBytes)
-
+		
 		openDelimPositions := OpenDelimiterRegex.FindAllStringIndex(runText, -1)
 		closeDelimPositions := CloseDelimiterRegex.FindAllStringIndex(runText, -1)
 

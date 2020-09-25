@@ -135,6 +135,7 @@ func (d *Document) replace(placeholderMap PlaceholderMap, docBytes []byte) ([]by
 		}
 	}
 
+
 	return replacer.Bytes(), nil
 }
 

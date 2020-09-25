@@ -8,12 +8,13 @@ var (
 		"fragmented_placeholder": "Replaced text",
 		"yet-another-placeholder": "Replaced text",
 		"some_placeholder": "Replaced text",
+		"foo_bar": "BAR BAZ",
 	}
 )
 
 func TestParsePlaceholders(t *testing.T) {
 	docBytes := readFile(t, "./test/placeholder.xml")
-	expectedPlaceholderCount := 5
+	expectedPlaceholderCount := 6
 
 	parser := NewRunParser(docBytes)
 	err := parser.Execute()
@@ -43,7 +44,7 @@ func TestParsePlaceholders(t *testing.T) {
 }
 
 func TestPlaceholder_AssembleFullPlaceholders(t *testing.T) {
-	expectedCount := 2
+	expectedCount := 3
 	openPos := []int{10, 18}
 	closePos := []int{17, 25}
 

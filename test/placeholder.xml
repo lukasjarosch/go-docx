@@ -40,12 +40,18 @@
    <w:r>
     <w:t>-placeholder}</w:t>
    </w:r>
+   <w:r>
+    <w:rPr>
+     <w:color w:val="ff0000"/>
+    </w:rPr>
+    <w:t xml:space="preserve">{foo_bar} </w:t>
+   </w:r>
   </w:p>
   <!-- deeply nested run -->
   <here>
-      <are>
-       <just>
-        <some>
+   <are>
+    <just>
+     <some>
          <more>
           <tags>
            <w:r>
