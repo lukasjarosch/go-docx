@@ -123,7 +123,7 @@ func newDocument(zipFile *zip.Reader, path string, docxFile *os.File) (*Document
 
 // ReplaceAll will iterate over all files and perform the replacement according to the PlaceholderMap.
 func (d *Document) ReplaceAll(placeholderMap PlaceholderMap) error {
-	for name, _ := range d.files {
+	for name := range d.files {
 		changedBytes, err := d.replace(placeholderMap, name)
 		if err != nil {
 			return err
@@ -139,7 +139,7 @@ func (d *Document) ReplaceAll(placeholderMap PlaceholderMap) error {
 
 // Replace will attempt to replace the given key with the value in every file.
 func (d *Document) Replace(key, value string) error {
-	for name, _ := range d.files {
+	for name := range d.files {
 		changedBytes, err := d.replace(PlaceholderMap{key: value}, name)
 		if err != nil {
 			return err
@@ -206,7 +206,7 @@ func (d *Document) countPlaceholders(file string, placeholderMap PlaceholderMap)
 	data := d.GetFile(file)
 	plaintext := d.stripXmlTags(string(data))
 	var placeholderCount int
-	for key, _ := range placeholderMap {
+	for key := range placeholderMap {
 		placeholder := AddPlaceholderDelimiter(key)
 
 		count := strings.Count(plaintext, placeholder)
