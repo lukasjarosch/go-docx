@@ -4,3 +4,5 @@ data/
 _rels/*
 word/*
 docProps/*
+*.bak
+examples/complex/*

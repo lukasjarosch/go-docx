@@ -1,14 +1,22 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"time"
 
 	"github.com/lukasjarosch/go-docx"
 )
 
+var templatePath, outputPath string
+func init() {
+	flag.StringVar(&templatePath, "template", "template.docx", "path to the template docx file")
+	flag.StringVar(&outputPath, "out", "replaced.docx", "path to the output docx")
+}
+
 func main() {
 	startTime := time.Now()
+	flag.Parse()
 
 	replaceMap := docx.PlaceholderMap{
 		"key":                         "REPLACE some more",
@@ -23,9 +31,9 @@ func main() {
 		"foo":                         "bar",
 	}
 
-	doc, err := docx.Open("template.docx")
+	doc, err := docx.Open(templatePath)
 	if err != nil {
-	    panic(err)
+		log.Fatal(err)
 	}
 
 	log.Printf("open took: %s", time.Since(startTime))
@@ -37,7 +45,7 @@ func main() {
 
 	log.Printf("replace took: %s", time.Since(startTime))
 
-	err = doc.WriteToFile("replaced.docx")
+	err = doc.WriteToFile(outputPath)
 	if err != nil {
 		panic(err)
 	}
