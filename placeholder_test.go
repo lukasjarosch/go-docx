@@ -44,7 +44,7 @@ func TestParsePlaceholders(t *testing.T) {
 }
 
 func TestPlaceholder_AssembleFullPlaceholders(t *testing.T) {
-	expectedCount := 3
+	expectedCount := 2
 	openPos := []int{10, 18}
 	closePos := []int{17, 25}
 
