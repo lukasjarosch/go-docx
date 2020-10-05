@@ -2,6 +2,7 @@ package docx
 
 import (
 	"errors"
+	"html"
 	"strings"
 	"sync"
 )
@@ -50,6 +51,9 @@ func (r *Replacer) Replace(placeholderKey string, value string) error {
 		placeholder := r.placeholders[i]
 		if placeholder.Text(r.document) == placeholderKey {
 			found = true
+
+			value = html.EscapeString(value)
+
 			// replace text of the placeholder's first fragment with the actual value
 			// the other fragments of the placeholder are cut, leaving only the value inside the document.
 			r.replaceFragmentValue(placeholder.Fragments[0], value)
