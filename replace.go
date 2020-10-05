@@ -52,11 +52,13 @@ func (r *Replacer) Replace(placeholderKey string, value string) error {
 		if placeholder.Text(r.document) == placeholderKey {
 			found = true
 
-			value = html.EscapeString(value)
+			// ensure html escaping of special chars
+			// reassign to prevent overwriting the actual value which would cause multiple-escapes
+			tmpVal := html.EscapeString(value)
 
 			// replace text of the placeholder's first fragment with the actual value
 			// the other fragments of the placeholder are cut, leaving only the value inside the document.
-			r.replaceFragmentValue(placeholder.Fragments[0], value)
+			r.replaceFragmentValue(placeholder.Fragments[0], tmpVal)
 			for i := 1; i < len(placeholder.Fragments); i++ {
 				r.cutFragment(placeholder.Fragments[i])
 			}
