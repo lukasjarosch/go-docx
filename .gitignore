@@ -1,6 +1,5 @@
 .idea
 data/
-[Content_Types]*
 _rels/*
 word/*
 docProps/*

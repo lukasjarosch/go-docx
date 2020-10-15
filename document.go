@@ -408,6 +408,10 @@ func (fm FileMap) Write(writer io.Writer, filename string) error {
 		return fmt.Errorf("file not found %s", filename)
 	}
 
+	// cleanup the file in order to solve known compatibility issues
+	// MS Word will not open the document if a file contains a singleton text <w:t/>, thus they need to be removed
+	file = []byte(strings.Replace(string(file), "<w:t/>", "", -1))
+
 	_, err := writer.Write(file)
 	if err != nil && err != io.EOF {
 		return fmt.Errorf("unable to writeFile '%s': %s", filename, err)
