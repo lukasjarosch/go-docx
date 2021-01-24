@@ -197,4 +197,4 @@ where the most debugging happened (gosh, so many offsets). The given explanation
 to grasp the concept, leaving out the messy bits.
 
 ### ➤ License
-This software is licensed under the [MIT license](http://opensource.org/licenses/mit-license.php).
+This software is licensed under the [MIT license](https://github.com/lukasjarosch/go-docx/blob/develop/LICENSE).
