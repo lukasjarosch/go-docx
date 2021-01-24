@@ -54,7 +54,7 @@ func ParsePlaceholders(runs DocumentRuns, docBytes []byte) (placeholders []*Plac
 
 	for _, run := range runs.WithText() {
 		runText := run.GetText(docBytes)
-		
+
 		openDelimPositions := OpenDelimiterRegex.FindAllStringIndex(runText, -1)
 		closeDelimPositions := CloseDelimiterRegex.FindAllStringIndex(runText, -1)
 
@@ -90,14 +90,7 @@ func ParsePlaceholders(runs DocumentRuns, docBytes []byte) (placeholders []*Plac
 
 			// add the unclosed part of the placeholder to a tmp placeholder var
 			unclosedOpenPos := openPos[len(openPos)-1]
-			fragment := &PlaceholderFragment{
-				Position: Position{
-					Start: int64(unclosedOpenPos),
-					End:   int64(len(runText)),
-				},
-				Number: 0,
-				Run:    run,
-			}
+			fragment := NewPlaceholderFragment(0, Position{int64(unclosedOpenPos), int64(len(runText))}, run)
 			unclosedPlaceholder.Fragments = append(unclosedPlaceholder.Fragments, fragment)
 			hasOpenPlaceholder = true
 			continue
@@ -113,14 +106,7 @@ func ParsePlaceholders(runs DocumentRuns, docBytes []byte) (placeholders []*Plac
 
 			// there is only a closePos and no open pos
 			if len(closePos) == 1 {
-				fragment := &PlaceholderFragment{
-					Position: Position{
-						Start: 0,
-						End:   int64(closePos[0])+1,
-					},
-					Number: len(unclosedPlaceholder.Fragments) + 1,
-					Run:    run,
-				}
+				fragment := NewPlaceholderFragment(0, Position{0, int64(int64(closePos[0])+1)}, run)
 				unclosedPlaceholder.Fragments = append(unclosedPlaceholder.Fragments, fragment)
 				placeholders = append(placeholders, unclosedPlaceholder)
 				unclosedPlaceholder = new(Placeholder)
@@ -134,14 +120,7 @@ func ParsePlaceholders(runs DocumentRuns, docBytes []byte) (placeholders []*Plac
 		// is an unclosed placeholder. That means that the full run belongs to the placeholder.
 		if len(openPos) == 0 && len(closePos) == 0 {
 			if hasOpenPlaceholder {
-				fragment := &PlaceholderFragment{
-					Position: Position{
-						Start: 0,
-						End:   int64(len(runText)),
-					},
-					Number: len(unclosedPlaceholder.Fragments) + 1,
-					Run:    run,
-				}
+				fragment := NewPlaceholderFragment(0, Position{0, int64(len(runText))}, run)
 				unclosedPlaceholder.Fragments = append(unclosedPlaceholder.Fragments, fragment)
 				continue
 			}
@@ -170,64 +149,11 @@ func assembleFullPlaceholders(run *Run, openPos, closePos []int) (placeholders [
 	for i := 0; i < len(openPos); i++ {
 		start := openPos[i]
 		end := closePos[i] + 1 // +1 is required to include the closing delimiter in the text
-		fragment := &PlaceholderFragment{
-			Position: Position{
-				Start: int64(start),
-				End:   int64(end),
-			},
-			Number: 0,
-			Run:    run,
-		}
+		fragment := NewPlaceholderFragment(0, Position{int64(start), int64(end)}, run)
 		p := &Placeholder{Fragments: []*PlaceholderFragment{fragment}}
 		placeholders = append(placeholders, p)
 	}
 	return placeholders
-}
-
-// PlaceholderFragment is a part of a placeholder within the document.xml
-// If the full placeholder is e.g. '{foo-bar}', the placeholder might be ripped
-// apart according to the WordprocessingML spec. So it will most likely occur, that
-// the placeholders are split into multiple fragments (e.g. '{foo' and '-bar}').
-type PlaceholderFragment struct {
-	Position Position // Position of the actual fragment within the run text. 0 == (Run.Text.OpenTag.End + 1)
-	Number   int      // numbering fragments for ease of use
-	Run      *Run
-}
-
-// StartPos returns the absolute start position of the fragment.
-func (p PlaceholderFragment) StartPos() int64 {
-	return p.Run.Text.StartTag.End + p.Position.Start
-}
-
-// EndPos returns the absolute end position of the fragment.
-func (p PlaceholderFragment) EndPos() int64 {
-	return p.Run.Text.StartTag.End + p.Position.End
-}
-
-// Text returns the actual text of the fragment given the source bytes.
-// If the given byte slice is not large enough for the offsets, an empty string is returned.
-func (p PlaceholderFragment) Text(docBytes []byte) string {
-	if int64(len(docBytes)) < p.StartPos() ||
-		int64(len(docBytes)) < p.EndPos() {
-		return ""
-	}
-	return string(docBytes[p.StartPos():p.EndPos()])
-}
-
-// TextLength returns the actual length of the fragment given a byte source.
-func (p PlaceholderFragment) TextLength(docBytes []byte) int64 {
-	return int64(len(p.Text(docBytes)))
-}
-
-// String spits out the most important bits and pieces of a fragment.
-func (p PlaceholderFragment) String(docBytes []byte) string {
-	format := "fragment in run [%d:%d] '%s' - [%d:%d] '%s'; run-text [%d:%d] '%s' - [%d:%d] '%s'; positions: [%d:%d] '%s'"
-	return fmt.Sprintf(format,
-		p.Run.OpenTag.Start, p.Run.OpenTag.End, docBytes[p.Run.OpenTag.Start:p.Run.OpenTag.End],
-		p.Run.CloseTag.Start, p.Run.CloseTag.End, docBytes[p.Run.CloseTag.Start:p.Run.CloseTag.End],
-		p.Run.Text.StartTag.Start, p.Run.Text.StartTag.End, docBytes[p.Run.Text.StartTag.Start:p.Run.Text.StartTag.End],
-		p.Run.Text.EndTag.Start, p.Run.Text.EndTag.End, docBytes[p.Run.Text.EndTag.Start:p.Run.Text.EndTag.End],
-		p.Position.Start, p.Position.End, docBytes[p.Run.Text.StartTag.End+p.Position.Start:p.Run.Text.StartTag.End+p.Position.End])
 }
 
 

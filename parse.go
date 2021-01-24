@@ -7,46 +7,7 @@ import (
 	"strings"
 )
 
-
-// A run defines a non-block region of text with a common set of properties.
-// It is specified with the <w:r> element.
-// In our case the run is specified by four byte positions (start and end tag).
-type Run struct {
-	OpenTag  Position
-	CloseTag Position
-	Text     TextRun
-	HasText  bool
-}
-
-// GetText returns the text of the run, if any.
-// If the run does not have a text or the given byte slice is too small, an empty string is returned
-func (r *Run) GetText(documentBytes []byte) string {
-	if !r.HasText {
-		return ""
-	}
-	startPos := r.Text.StartTag.End
-	endPos := r.Text.EndTag.Start
-
-	if int64(len(documentBytes)) < startPos || int64(len(documentBytes)) < endPos {
-		return ""
-	}
-
-	return string(documentBytes[startPos:endPos])
-}
-
-type DocumentRuns []*Run
-
-// WithText returns all runs with the HasText flag set
-func (dr DocumentRuns) WithText() DocumentRuns {
-	var r DocumentRuns
-	for _, run := range dr {
-		if run.HasText {
-			r = append(r, run)
-		}
-	}
-	return r
-}
-
+// RunParser can parse a list of Runs from a given byte slice.
 type RunParser struct {
 	doc []byte
 	runs DocumentRuns
@@ -87,7 +48,7 @@ func (parser *RunParser) findRuns() error {
 	decoder := xml.NewDecoder(docReader)
 
 	// find all runs in document.xml
-	tmpRun := &Run{}
+	tmpRun := NewEmptyRun()
 	singleElement := false
 
 	for {
@@ -126,12 +87,12 @@ func (parser *RunParser) findRuns() error {
 					singleElement = false
 					tmpRun.CloseTag = tmpRun.OpenTag
 					parser.runs = append(parser.runs, tmpRun)
-					tmpRun = &Run{}
+					tmpRun = NewEmptyRun()
 					break
 				}
 				tmpRun.CloseTag = TagPosition(docReader.Pos(), closeTag)
 				parser.runs = append(parser.runs, tmpRun)
-				tmpRun = &Run{}
+				tmpRun = NewEmptyRun()
 			}
 		}
 	}

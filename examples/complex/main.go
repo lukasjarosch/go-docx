@@ -1,44 +1,45 @@
 package main
 
 import (
-	"log"
-	"time"
-
+	"flag"
 	"github.com/lukasjarosch/go-docx"
+	"time"
 )
 
+var templatePath, outputPath string
+
+func init() {
+	flag.StringVar(&templatePath, "template", "template2.docx", "path to the template docx file")
+	flag.StringVar(&outputPath, "out", "replaced.docx", "path to the output docx")
+}
+
 func main() {
-	startTime := time.Now()
+	flag.Parse()
 
 	replaceMap := docx.PlaceholderMap{
-		"verwalter.name":                   "Verwalter",
-		"verwalter.strasse":                "Strasse",
-		"verwalter.hausnummer":             "111",
-		"verwalter.plz":                    "8129",
-		"verwalter.ort":                    "Irgendwo",
-		"verwalter.telefon":                "123 123 123 123",
-		"datum.heute": time.Now().Format("02.01.2006"),
+		"verwalter.name":       "Verwalter",
+		"verwalter.strasse":    "Strasse",
+		"verwalter.hausnummer": "111",
+		"verwalter.plz":        "8129",
+		"verwalter.ort":        "Irgendwo",
+		"verwalter.telefon":    "123 123 123 123",
+		"datum.heute":          time.Now().Format("02.01.2006"),
+		"vermietung.brutto": "CHF 123245.00",
+		"vermietung.netto": "CHF 2342.00",
 	}
 
-	doc, err := docx.Open("./examples/complex/template.docx")
-	if err != nil {
-	    panic(err)
-	}
-
-	log.Printf("open took: %s", time.Since(startTime))
-
-	err = doc.ReplaceAll(replaceMap)
-	if err != nil {
-	    panic(err)
-	}
-
-	log.Printf("replace took: %s", time.Since(startTime))
-
-	err = doc.WriteToFile("./examples/complex/replaced.docx")
+	doc, err := docx.Open(templatePath)
 	if err != nil {
 		panic(err)
 	}
 
-	log.Printf("everything took: %s", time.Since(startTime))
-}
+	err = doc.ReplaceAll(replaceMap)
+	if err != nil {
+		panic(err)
+	}
 
+	err = doc.WriteToFile(outputPath)
+	if err != nil {
+		panic(err)
+	}
+}
