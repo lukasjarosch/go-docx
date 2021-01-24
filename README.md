@@ -1,8 +1,8 @@
 <h1 align="center">go-docx</h1>
 
 <p align="center">
-	
-	
+
+
 ![test](https://github.com/lukasjarosch/go-docx/workflows/test/badge.svg)
 
 
@@ -10,9 +10,9 @@
 
 <p align="center">
    <b>Replace placeholders inside docx documents with speed and confidence.</b>
-	
-   
-   <p align="center"><sub>This project provides a simple and clean API to perform replacing of user-defined placeholders.   
+
+
+   <p align="center"><sub>This project provides a simple and clean API to perform replacing of user-defined placeholders.
    Without the uncertainty that the placeholders may be ripped  aparty by the WordprocessingML engine used to create the document.</sub></p>
 </p>
 
@@ -31,6 +31,7 @@
 ### Table of Contents
 - [Purpose](#-purpose)
 - [Getting Started](#-getting-started)
+- [Terminology](#-terminology)
 - [How it works](#-how-it-works)
 - [License](#-license)
 
@@ -50,7 +51,7 @@ All you need is to `go get github.com/lukasjarosch/go-docx`
 
 ```go
 func main() {
-        // replaceMap is a key-value map whereas the keys 
+        // replaceMap is a key-value map whereas the keys
 	// represent the placeholders without the delimiters
 	replaceMap := docx.PlaceholderMap{
 		"key":                         "REPLACE some more",
@@ -84,6 +85,31 @@ func main() {
 }
 ```
 
+#### Placholders
+Placeholders are delimited with `{` and `}`, nesting of placeholders is not possible.
+Currently, there is no way to change the placeholders as I do not see a reason to do so.
+
+#### Styling
+The way this lib works is that a placeholder is just a list of fragments. When detecting the placeholders inside the XML, it looks for the OpenDelimiter and CloseDelimiter.
+The first fragment found (e.g. `{foo` of placeholder `{foo-bar}`) will be replaced with the value from the `ReplaceMap`.
+
+This means that technically you can style only the OpenDelimiter inside the Word-Document and the whole value will be styled like that after replacing.
+Although I do not recommend to do that as the WordprocessingML spec is somewhat fragile in this case. So it's best to just style the whole placeholder.
+
+But, for whatever reason there might be, you can do that.
+
+### ➤ Terminology
+To not cause too much confusion, here is a list of terms which you might come across.
+
+* **Parser**: Every file which this lib handles (document, footers and headers) has their own parser attached since everything is relative to the underlying byte-slice (aka. file).
+* **Position**: A Position is just a `Start` and `End` offset, relative to the byte slice of the document of a parser.
+* **Run**: Describes the pair `<w:r>` and `</w:r>` and thus has two `Positions` for the open and close tag. Since they are Positions, they have a `Start` and `End` Position which point to `<` and `>` of the tag. A run also consists of a `TextRun`.
+* **TextRun**: Is always nested inside a run and describes the tags `<w:t>` and `</w:t>`. It also just consists of two `Positions`. The type was just created for clarity and does not have special functionality.
+
+* **Placeholder**: A Placeholder is basically just a list of `PlaceholderFragments` representing a full placeholder extracted by a `Parser`.
+* **PlaceholderFragment**: A PlaceholderFragment is a parsed fragment of a placeholder since those will most likely be ripped apart by WordprocessingML. The Placeholder `{foo-bar-baz}` might ultimately consist of 5 fragments ( `{`, `foo-`, `bar-`, `baz`, `}`).
+The fragment is at the heart of replacing. It knows to which `Run` it belongs to and has methods of manipulating these byte-offsets. Additionally it has a `Position` which describes the offset inside the `TextRun` since the fragments don't always start at the beginning of one (e.g. `<w:t>some text {fragment-start</w:t>`)
+
 ### ➤ How it works
 This section will give you a short overview of what's actually going on.
 And honenstly.. it's a much needed reference for my future self :D.
@@ -106,12 +132,12 @@ To illustrate that, here is how this might look inside the document.xml.
     </w:r>
 </w:p>
 ```
-One can clearly see that replacing the `{key-with-dashes}` placeholder is quite simple. 
+One can clearly see that replacing the `{key-with-dashes}` placeholder is quite simple.
 Just do a `strings.Replace()`, right? **Wrong!**
 
 Although this might work on 70-80% of the time, it will not work reliably.
-The reason is how the WordprocessingML spec is set-up. It will fragment text-literals 
-based on many different circumstances. 
+The reason is how the WordprocessingML spec is set-up. It will fragment text-literals
+based on many different circumstances.
 
 For example if you added half of the placeholder, saved
 and quit Word, and then add the second half of the placeholder, it might happen (in order to preserve session history), that the placeholder will look something like that (simplified).
@@ -130,7 +156,7 @@ and quit Word, and then add the second half of the placeholder, it might happen 
 As you can clearly see, doing a simple replace doesn't do it in this case.
 
 #### Premises
-In order to achive the goal of reliably replacing values inside a docx archive, the following 
+In order to achive the goal of reliably replacing values inside a docx archive, the following
 premises are considered:
 
 * Text literals are always inside `<w:t>` tags
@@ -144,13 +170,13 @@ Here I will outline what happens in order to achieve the said goal.
 1. Open the *.docx file specified and extract all files in which replacement should take place.
  Currently, there files extracted are `word/document.xml`, `word/footer<X>.xml` and `word/header<X>.xml`.
  Any content which resides in different files requires a modification.
- 
+
 2. First XML pass. Iterate over a given file (e.g. the document.xml) and find all `<w:r>` and `</w:r>` tags inside
-the bytes of the file. Remember the positions given by the custom `io.Reader` implementation. 
+the bytes of the file. Remember the positions given by the custom `io.Reader` implementation.
 **Note** Singleton tags are handled correctly (e.g. `<w:r/>`).
 
 3. Second XML pass. Basically the same as the first pass, just this time the text tags (`<w:t>`) inside
-the found runs are extracted. 
+the found runs are extracted.
 
 4. Placeholder extraction. At this point all text literals are known by their offset inside the file.
 Using the premise that no placeholder nesting is allowed, the placeholder fragments can be
@@ -169,6 +195,6 @@ be outlined in two steps:
 All the steps taken in 5. require cumbersome shifting of the offsets. This is the tricky part
 where the most debugging happened (gosh, so many offsets). The given explanation is definitely enough
 to grasp the concept, leaving out the messy bits.
-    
+
 ### ➤ License
 This software is licensed under the [MIT license](http://opensource.org/licenses/mit-license.php).
