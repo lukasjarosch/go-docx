@@ -13,7 +13,7 @@
 
 
    <p align="center"><sub>This project provides a simple and clean API to perform replacing of user-defined placeholders.
-   Without the uncertainty that the placeholders may be ripped  aparty by the WordprocessingML engine used to create the document.</sub></p>
+   Without the uncertainty that the placeholders may be ripped  apart by the WordprocessingML engine used to create the document.</sub></p>
 </p>
 
 
