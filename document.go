@@ -330,18 +330,16 @@ func (d *Document) Write(writer io.Writer) error {
 	zipWriter := zip.NewWriter(writer)
 	defer zipWriter.Close()
 
-	// concatenates all files which can be modified using this lib and writes them into the zipFile using the writer.
+	// writeModifiedFile will check if the given zipFile is a file which was modified and writes it.
+	// If the file is not one of the modified files, false is returned.
 	writeModifiedFile := func(writer io.Writer, zipFile *zip.File) (bool, error) {
-		if err := d.writeFiles(writer, zipFile, d.headerFiles...); err != nil {
-			return false, err
+		isModified := d.isModifiedFile(zipFile.Name)
+		if !isModified {
+			return false, nil
 		}
-		if err := d.writeFiles(writer, zipFile, d.footerFiles...); err != nil {
-			return false, err
+		if err := d.files.Write(writer, zipFile.Name); err != nil {
+			return false, fmt.Errorf("unable to writeFile %s: %s", zipFile.Name, err)
 		}
-		if err := d.writeFiles(writer, zipFile, DocumentXml); err != nil {
-			return false, err
-		}
-
 		return true, nil
 	}
 
@@ -378,6 +376,19 @@ func (d *Document) Write(writer io.Writer) error {
 	return nil
 }
 
+// isModifiedFile will look through all modified files and check if the searchFileName exists
+func (d *Document) isModifiedFile(searchFileName string) bool {
+	allFiles := append(d.headerFiles, d.footerFiles...)
+	allFiles = append(allFiles, DocumentXml)
+
+	for _, file := range allFiles {
+		if searchFileName == file {
+			return true
+		}
+	}
+	return false
+}
+
 // Close will close everything :)
 func (d *Document) Close() {
 	if d.docxFile != nil {
@@ -386,19 +397,6 @@ func (d *Document) Close() {
 			log.Fatal(err)
 		}
 	}
-}
-
-// writeFiles will use the writer in order to write the given files into the zipFile.
-func (d *Document) writeFiles(writer io.Writer, zipFile *zip.File, files ...string) error {
-	for _, writeFile := range files {
-		if zipFile.Name == writeFile {
-			if err := d.files.Write(writer, zipFile.Name); err != nil {
-				return fmt.Errorf("unable to writeFiles %s: %s", zipFile.Name, err)
-			}
-			log.Println("written", files)
-		}
-	}
-	return nil
 }
 
 // FileMap is just a convenience type for the map of fileName => fileBytes
