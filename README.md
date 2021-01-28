@@ -2,9 +2,8 @@
 
 <p align="center">
 
-
-![tests](https://github.com/lukasjarosch/go-docx/workflows/test/badge.svg)
-![goreport](https://goreportcard.com/badge/github.com/lukasjarosch/go-docx)
+[![tests](https://github.com/lukasjarosch/go-docx/workflows/test/badge.svg)](https://github.com/lukasjarosch/go-docx/actions?query=workflow%3Atest)
+[![goreport](https://goreportcard.com/badge/github.com/lukasjarosch/go-docx)](https://goreportcard.com/report/github.com/lukasjarosch/go-docx)
 
 </p>
 
