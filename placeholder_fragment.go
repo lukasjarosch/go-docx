@@ -98,7 +98,7 @@ func (p PlaceholderFragment) TextLength(docBytes []byte) int64 {
 
 // String spits out the most important bits and pieces of a fragment and can be used for debugging purposes.
 func (p PlaceholderFragment) String(docBytes []byte) string {
-	format := "fragment %d in %str with fragment text-positions: [%d:%d] '%str'"
+	format := "fragment %d in %s with fragment text-positions: [%d:%d] '%s'"
 	return fmt.Sprintf(format, p.ID, p.Run.String(docBytes),
 		p.Position.Start, p.Position.End, docBytes[p.Run.Text.StartTag.End+p.Position.Start:p.Run.Text.StartTag.End+p.Position.End])
 }

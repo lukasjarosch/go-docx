@@ -19,7 +19,7 @@ func TestParsePlaceholders(t *testing.T) {
 	parser := NewRunParser(docBytes)
 	err := parser.Execute()
 	if err != nil {
-		t.Errorf("parser.Execute failed: %str", err)
+		t.Errorf("parser.Execute failed: %s", err)
 	}
 
 	placeholders := ParsePlaceholders(parser.Runs().WithText(), docBytes)
@@ -38,7 +38,7 @@ func TestParsePlaceholders(t *testing.T) {
 			}
 		}
 		if !valid {
-			t.Errorf("did not find expected placeholder %str", expectedKey)
+			t.Errorf("did not find expected placeholder %s", expectedKey)
 		}
 	}
 }

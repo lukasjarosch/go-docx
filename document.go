@@ -55,12 +55,12 @@ type Document struct {
 func Open(path string) (*Document, error) {
 	fh, err := os.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("unable to open .docx docxFile: %str", err)
+		return nil, fmt.Errorf("unable to open .docx docxFile: %s", err)
 	}
 
 	rc, err := zip.OpenReader(path)
 	if err != nil {
-		return nil, fmt.Errorf("unable to open zip reader: %str", err)
+		return nil, fmt.Errorf("unable to open zip reader: %s", err)
 	}
 
 	return newDocument(&rc.Reader, path, fh)
@@ -74,7 +74,7 @@ func OpenBytes(b []byte) (*Document, error) {
 	rc, err := zip.NewReader(bytes.NewReader(b), int64(len(b)))
 
 	if err != nil {
-		return nil, fmt.Errorf("unable to open zip reader: %str", err)
+		return nil, fmt.Errorf("unable to open zip reader: %s", err)
 	}
 
 	return newDocument(rc, "", nil)
@@ -98,12 +98,12 @@ func newDocument(zipFile *zip.Reader, path string, docxFile *os.File) (*Document
 	}
 
 	if err := doc.parseArchive(); err != nil {
-		return nil, fmt.Errorf("error parsing document: %str", err)
+		return nil, fmt.Errorf("error parsing document: %s", err)
 	}
 
 	// a valid docx document should really contain a document.xml :)
 	if _, exists := doc.files[DocumentXml]; !exists {
-		return nil, fmt.Errorf("invalid docx archive, %str is missing", DocumentXml)
+		return nil, fmt.Errorf("invalid docx archive, %s is missing", DocumentXml)
 	}
 
 	// parse all files
@@ -159,7 +159,7 @@ func (d *Document) Replace(key, value string) error {
 // from the placeholderMap.
 func (d *Document) replace(placeholderMap PlaceholderMap, file string) ([]byte, error) {
 	if _, ok := d.runParsers[file]; !ok {
-		return nil, fmt.Errorf("no parser for file %str", file)
+		return nil, fmt.Errorf("no parser for file %s", file)
 	}
 	placeholderCount := d.countPlaceholders(file, placeholderMap)
 	placeholders := d.filePlaceholders[file]
@@ -259,7 +259,7 @@ func (d *Document) GetFile(fileName string) []byte {
 // The fileName must be known, otherwise an error is returned.
 func (d *Document) SetFile(fileName string, fileBytes []byte) error {
 	if _, exists := d.files[fileName]; !exists {
-		return fmt.Errorf("unregistered file %str", fileName)
+		return fmt.Errorf("unregistered file %s", fileName)
 	}
 	d.files[fileName] = fileBytes
 	return nil
@@ -311,7 +311,7 @@ func (d *Document) WriteToFile(file string) error {
 
 	err := os.MkdirAll(filepath.Dir(file), 0755)
 	if err != nil {
-		return fmt.Errorf("unable to ensure path directories: %str", err)
+		return fmt.Errorf("unable to ensure path directories: %s", err)
 	}
 
 	target, err := os.Create(file)
@@ -330,42 +330,26 @@ func (d *Document) Write(writer io.Writer) error {
 	zipWriter := zip.NewWriter(writer)
 	defer zipWriter.Close()
 
-	// writes all files which can be modified through the Document and returns true if the file was written.
-	// If no file was written, false is returned.
+	// concatenates all files which can be modified using this lib and writes them into the zipFile using the writer.
 	writeModifiedFile := func(writer io.Writer, zipFile *zip.File) (bool, error) {
-		for _, headerFile := range d.headerFiles {
-			if zipFile.Name == headerFile {
-				if err := d.files.Write(writer, zipFile.Name); err != nil {
-					return false, fmt.Errorf("unable to writeFile %str: %str", zipFile.Name, err)
-				}
-				return true, nil
-			}
-		}
-		for _, footerFile := range d.footerFiles {
-			if zipFile.Name == footerFile {
-				if err := d.files.Write(writer, zipFile.Name); err != nil {
-					return false, fmt.Errorf("unable to writeFile %str: %str", zipFile.Name, err)
-				}
-				return true, nil
-			}
-		}
-		if zipFile.Name == DocumentXml {
-			if err := d.files.Write(writer, zipFile.Name); err != nil {
-				return false, err
-			}
-			return true, nil
+		allFiles := append(d.headerFiles, d.footerFiles...)
+		allFiles = append(allFiles, DocumentXml)
+
+		if err := d.writeFiles(writer, zipFile, allFiles...); err != nil {
+			return false, err
 		}
 
 		return false, nil
 	}
 
+	// write all files into the zip archive (docx-file)
 	for _, zipFile := range d.zipFile.File {
 		fw, err := zipWriter.Create(zipFile.Name)
 		if err != nil {
-			return fmt.Errorf("unable to create writer: %str", err)
+			return fmt.Errorf("unable to create writer: %s", err)
 		}
 
-		// if the file is a file which we might have modified (aka is in the FileMap)
+		// write all files which might've been modified by us
 		written, err := writeModifiedFile(fw, zipFile)
 		if err != nil {
 			return err
@@ -374,18 +358,18 @@ func (d *Document) Write(writer io.Writer) error {
 			continue
 		}
 
-		// all unwritten files were not modified by us are thus copied from the source docx.
+		// all files which we don't touch here (e.g. _rels.xml) are just copied from the original
 		readCloser, err := zipFile.Open()
 		if err != nil {
-			return fmt.Errorf("unable to open %str: %str", zipFile.Name, err)
+			return fmt.Errorf("unable to open %s: %s", zipFile.Name, err)
 		}
 		_, err = fw.Write(readBytes(readCloser))
 		if err != nil {
-			return fmt.Errorf("unable to writeFile zipFile %str: %str", zipFile.Name, err)
+			return fmt.Errorf("unable to writeFile zipFile %s: %s", zipFile.Name, err)
 		}
 		err = readCloser.Close()
 		if err != nil {
-			return fmt.Errorf("unable to close reader for %str: %str", zipFile.Name, err)
+			return fmt.Errorf("unable to close reader for %s: %s", zipFile.Name, err)
 		}
 	}
 	return nil
@@ -401,6 +385,19 @@ func (d *Document) Close() {
 	}
 }
 
+// writeFiles will use the writer in order to write the given files into the zipFile.
+func (d *Document) writeFiles(writer io.Writer, zipFile *zip.File, files ...string) error {
+	for _, writeFile := range files {
+		if zipFile.Name == writeFile {
+			if err := d.files.Write(writer, zipFile.Name); err != nil {
+				return fmt.Errorf("unable to writeFiles %s: %s", zipFile.Name, err)
+			}
+			return nil
+		}
+	}
+	return nil
+}
+
 // FileMap is just a convenience type for the map of fileName => fileBytes
 type FileMap map[string][]byte
 
@@ -408,7 +405,7 @@ type FileMap map[string][]byte
 func (fm FileMap) Write(writer io.Writer, filename string) error {
 	file, ok := fm[filename]
 	if !ok {
-		return fmt.Errorf("file not found %str", filename)
+		return fmt.Errorf("file not found %s", filename)
 	}
 
 	// cleanup the file in order to solve known compatibility issues
@@ -417,7 +414,7 @@ func (fm FileMap) Write(writer io.Writer, filename string) error {
 
 	_, err := writer.Write(file)
 	if err != nil && err != io.EOF {
-		return fmt.Errorf("unable to writeFile '%str': %str", filename, err)
+		return fmt.Errorf("unable to writeFile '%s': %s", filename, err)
 	}
 	return nil
 }

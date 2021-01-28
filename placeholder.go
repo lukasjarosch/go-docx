@@ -169,7 +169,7 @@ func AddPlaceholderDelimiter(s string) string {
 	if IsDelimitedPlaceholder(s) {
 		return s
 	}
-	return fmt.Sprintf("%c%str%c", OpenDelimiter, s, CloseDelimiter)
+	return fmt.Sprintf("%c%s%c", OpenDelimiter, s, CloseDelimiter)
 }
 
 // RemovePlaceholderDelimiter removes OpenDelimiter and CloseDelimiter from the given text.
@@ -178,7 +178,7 @@ func RemovePlaceholderDelimiter(s string) string {
 	if !IsDelimitedPlaceholder(s) {
 		return s
 	}
-	return strings.Trim(s, fmt.Sprintf("%str%str", string(OpenDelimiter), string(CloseDelimiter)))
+	return strings.Trim(s, fmt.Sprintf("%s%s", string(OpenDelimiter), string(CloseDelimiter)))
 }
 
 // IsDelimitedPlaceholder returns true if the given string is a delimited placeholder.

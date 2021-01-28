@@ -59,7 +59,7 @@ func (parser *RunParser) findRuns() error {
 			break
 		}
 		if err != nil {
-			return fmt.Errorf("error getting token: %str", err)
+			return fmt.Errorf("error getting token: %s", err)
 		}
 
 		switch elem := tok.(type) {
@@ -123,7 +123,7 @@ func (parser *RunParser) findTextRuns() error {
 			break
 		}
 		if err != nil {
-			return fmt.Errorf("error getting token: %str", err)
+			return fmt.Errorf("error getting token: %s", err)
 		}
 
 		switch elem := tok.(type) {

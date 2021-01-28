@@ -44,7 +44,7 @@ func (r *Run) GetText(documentBytes []byte) string {
 // String returns a string representation of the run, given the source bytes.
 // It may be helpful in debugging.
 func (r *Run) String(bytes []byte) string {
-	format := "run %d from offset [%d:%d] '%str' to [%d:%d] '%str; run-text offset from [%d:%d] '%str' to [%d:%d] '%str'"
+	format := "run %d from offset [%d:%d] '%s' to [%d:%d] '%s; run-text offset from [%d:%d] '%s' to [%d:%d] '%s'"
 	return fmt.Sprintf(format, r.ID,
 		r.OpenTag.Start, r.OpenTag.End, bytes[r.OpenTag.Start:r.OpenTag.End],
 		r.CloseTag.Start, r.CloseTag.End, bytes[r.CloseTag.Start:r.CloseTag.End],

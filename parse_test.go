@@ -18,7 +18,7 @@ func TestRunParser_FindRuns(t *testing.T) {
 	sut := NewRunParser(docBytes)
 	err := sut.findRuns()
 	if err != nil {
-		t.Errorf("parser.findRuns failed: %str", err)
+		t.Errorf("parser.findRuns failed: %s", err)
 	}
 
 	is := len(sut.Runs())
@@ -34,11 +34,11 @@ func TestRunParser_FindTextRuns(t *testing.T) {
 	sut := NewRunParser(docBytes)
 	err := sut.findRuns()
 	if err != nil {
-		t.Errorf("parser.findRuns failed: %str", err)
+		t.Errorf("parser.findRuns failed: %s", err)
 	}
 	err = sut.findTextRuns()
 	if err != nil {
-		t.Errorf("parser.findTextRuns failed: %str", err)
+		t.Errorf("parser.findTextRuns failed: %s", err)
 	}
 }
 
@@ -47,7 +47,7 @@ func TestRun_GetText(t *testing.T) {
 	sut := NewRunParser(docBytes)
 	err := sut.Execute()
 	if err != nil {
-		t.Errorf("parser.Execute failed: %str", err)
+		t.Errorf("parser.Execute failed: %s", err)
 	}
 
 	for _, expectedText := range expectedTexts {
@@ -56,12 +56,12 @@ func TestRun_GetText(t *testing.T) {
 			text := run.GetText(docBytes)
 			if text == expectedText {
 				found = true
-				t.Logf("found expected text %str", expectedText)
+				t.Logf("found expected text %s", expectedText)
 				continue
 			}
 		}
 		if !found {
-			t.Errorf("did not find expected text %str", expectedText)
+			t.Errorf("did not find expected text %s", expectedText)
 		}
 	}
 }
@@ -72,7 +72,7 @@ func TestRun_WithText(t *testing.T) {
 	sut := NewRunParser(docBytes)
 	err := sut.Execute()
 	if err != nil {
-		t.Errorf("parser.findRuns failed: %str", err)
+		t.Errorf("parser.findRuns failed: %s", err)
 	}
 
 	is := len(sut.Runs().WithText())
@@ -90,7 +90,7 @@ func readFile(t testing.TB, path string) []byte {
 	b := readBytes(f)
 	n := len(b)
 	if n == 0 {
-		t.Errorf("nothing was read from test file %str", path)
+		t.Errorf("nothing was read from test file %s", path)
 	}
 
 	return b
