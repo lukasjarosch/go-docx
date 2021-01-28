@@ -8,7 +8,7 @@ import (
 
 const (
 	// OpenDelimiter defines the opening delimiter for the placeholders used inside a docx-document.
-	OpenDelimiter  rune = '{'
+	OpenDelimiter rune = '{'
 	// CloseDelimiter defines the closing delimiter for the placeholders used inside a docx-document.
 	CloseDelimiter rune = '}'
 )
@@ -48,7 +48,7 @@ func (p Placeholder) StartPos() int64 {
 
 // EndPos returns the absolute end position of the placeholder.
 func (p Placeholder) EndPos() int64 {
-	end := len(p.Fragments) -1
+	end := len(p.Fragments) - 1
 	return p.Fragments[end].Run.Text.StartTag.End + p.Fragments[end].Position.End
 }
 
@@ -109,11 +109,11 @@ func ParsePlaceholders(runs DocumentRuns, docBytes []byte) (placeholders []*Plac
 		if len(openPos) < len(closePos) {
 			// merge full placeholders in the run, leaving out the last closePos since
 			// we know that the one is left over and must be handled separately below
-			placeholders = append(placeholders, assembleFullPlaceholders(run, openPos, closePos[:len(closePos) - 1])...)
+			placeholders = append(placeholders, assembleFullPlaceholders(run, openPos, closePos[:len(closePos)-1])...)
 
 			// there is only a closePos and no open pos
 			if len(closePos) == 1 {
-				fragment := NewPlaceholderFragment(0, Position{0, int64(int64(closePos[0])+1)}, run)
+				fragment := NewPlaceholderFragment(0, Position{0, int64(int64(closePos[0]) + 1)}, run)
 				unclosedPlaceholder.Fragments = append(unclosedPlaceholder.Fragments, fragment)
 				placeholders = append(placeholders, unclosedPlaceholder)
 				unclosedPlaceholder = new(Placeholder)
@@ -152,7 +152,7 @@ func ParsePlaceholders(runs DocumentRuns, docBytes []byte) (placeholders []*Plac
 // openPos and closePos are expected to be symmetrical (e.g. same length).
 // Example: openPos := []int{10,20,30}; closePos := []int{13, 23, 33}
 // The n-th elements inside openPos and closePos must be matching delimiter positions.
-func assembleFullPlaceholders(run *Run, openPos, closePos []int) (placeholders []*Placeholder){
+func assembleFullPlaceholders(run *Run, openPos, closePos []int) (placeholders []*Placeholder) {
 	for i := 0; i < len(openPos); i++ {
 		start := openPos[i]
 		end := closePos[i] + 1 // +1 is required to include the closing delimiter in the text
@@ -162,7 +162,6 @@ func assembleFullPlaceholders(run *Run, openPos, closePos []int) (placeholders [
 	}
 	return placeholders
 }
-
 
 // AddPlaceholderDelimiter will wrap the given string with OpenDelimiter and CloseDelimiter.
 // If the given string is already a delimited placeholder, it is returned unchanged.

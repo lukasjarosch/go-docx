@@ -4,11 +4,11 @@ import "testing"
 
 var (
 	textMapping = PlaceholderMap{
-		"single": "Replaced text",
-		"fragmented_placeholder": "Replaced text",
+		"single":                  "Replaced text",
+		"fragmented_placeholder":  "Replaced text",
 		"yet-another-placeholder": "Replaced text",
-		"some_placeholder": "Replaced text",
-		"foo_bar": "BAR BAZ",
+		"some_placeholder":        "Replaced text",
+		"foo_bar":                 "BAR BAZ",
 	}
 )
 
@@ -53,4 +53,3 @@ func TestPlaceholder_AssembleFullPlaceholders(t *testing.T) {
 		t.Errorf("not all full placeholders were parsed, want=%d, have=%d", expectedCount, len(placeholders))
 	}
 }
-

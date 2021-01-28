@@ -21,7 +21,7 @@ type Run struct {
 func NewEmptyRun() *Run {
 	runId += 1
 	return &Run{
-		ID:       NewRunID(),
+		ID: NewRunID(),
 	}
 }
 
