@@ -332,14 +332,17 @@ func (d *Document) Write(writer io.Writer) error {
 
 	// concatenates all files which can be modified using this lib and writes them into the zipFile using the writer.
 	writeModifiedFile := func(writer io.Writer, zipFile *zip.File) (bool, error) {
-		allFiles := append(d.headerFiles, d.footerFiles...)
-		allFiles = append(allFiles, DocumentXml)
-
-		if err := d.writeFiles(writer, zipFile, allFiles...); err != nil {
+		if err := d.writeFiles(writer, zipFile, d.headerFiles...); err != nil {
+			return false, err
+		}
+		if err := d.writeFiles(writer, zipFile, d.footerFiles...); err != nil {
+			return false, err
+		}
+		if err := d.writeFiles(writer, zipFile, DocumentXml); err != nil {
 			return false, err
 		}
 
-		return false, nil
+		return true, nil
 	}
 
 	// write all files into the zip archive (docx-file)
@@ -392,7 +395,7 @@ func (d *Document) writeFiles(writer io.Writer, zipFile *zip.File, files ...stri
 			if err := d.files.Write(writer, zipFile.Name); err != nil {
 				return fmt.Errorf("unable to writeFiles %s: %s", zipFile.Name, err)
 			}
-			return nil
+			log.Println("written", files)
 		}
 	}
 	return nil
