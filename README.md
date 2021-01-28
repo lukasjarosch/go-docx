@@ -3,8 +3,8 @@
 <p align="center">
 
 
-![test](https://github.com/lukasjarosch/go-docx/workflows/test/badge.svg)
-
+![tests](https://github.com/lukasjarosch/go-docx/workflows/test/badge.svg)
+![goreport](https://goreportcard.com/badge/github.com/lukasjarosch/go-docx)
 
 </p>
 
