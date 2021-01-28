@@ -9,6 +9,7 @@ import (
 )
 
 var templatePath, outputPath string
+
 func init() {
 	flag.StringVar(&templatePath, "template", "template.docx", "path to the template docx file")
 	flag.StringVar(&outputPath, "out", "replaced.docx", "path to the output docx")
@@ -40,7 +41,7 @@ func main() {
 
 	err = doc.ReplaceAll(replaceMap)
 	if err != nil {
-	    panic(err)
+		panic(err)
 	}
 
 	log.Printf("replace took: %s", time.Since(startTime))
@@ -52,4 +53,3 @@ func main() {
 
 	log.Printf("everything took: %s", time.Since(startTime))
 }
-

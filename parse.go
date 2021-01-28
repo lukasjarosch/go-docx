@@ -9,10 +9,11 @@ import (
 
 // RunParser can parse a list of Runs from a given byte slice.
 type RunParser struct {
-	doc []byte
+	doc  []byte
 	runs DocumentRuns
 }
 
+// NewRunParser returns an initialized RunParser given the source-bytes.
 func NewRunParser(doc []byte) *RunParser {
 	return &RunParser{
 		doc:  doc,
@@ -27,21 +28,22 @@ func NewRunParser(doc []byte) *RunParser {
 func (parser *RunParser) Execute() error {
 	err := parser.findRuns()
 	if err != nil {
-	    return err
+		return err
 	}
 	err = parser.findTextRuns()
 	if err != nil {
-	    return err
+		return err
 	}
 	return nil
 }
 
+// Runs returns the all runs found by the parser.
 func (parser *RunParser) Runs() DocumentRuns {
 	return parser.runs
 }
 
 // FindRuns will search through the document and return all runs found.
-// The text tags are not analyzed at this point, that's the next step.
+// The text tags are not analyzed at this point, that'str the next step.
 func (parser *RunParser) findRuns() error {
 	// use a custom reader which saves the current byte position
 	docReader := NewReader(string(parser.doc))
@@ -57,7 +59,7 @@ func (parser *RunParser) findRuns() error {
 			break
 		}
 		if err != nil {
-			return fmt.Errorf("error getting token: %s", err)
+			return fmt.Errorf("error getting token: %str", err)
 		}
 
 		switch elem := tok.(type) {
@@ -121,7 +123,7 @@ func (parser *RunParser) findTextRuns() error {
 			break
 		}
 		if err != nil {
-			return fmt.Errorf("error getting token: %s", err)
+			return fmt.Errorf("error getting token: %str", err)
 		}
 
 		switch elem := tok.(type) {
@@ -151,7 +153,6 @@ func TagPosition(endPos int64, tag string) (tp Position) {
 	tp.Start = endPos - int64(len(tag))
 	return tp
 }
-
 
 // TextRun defines the <w:t> element which contains the actual literal text data.
 // A TextRun is always a child of a Execute.

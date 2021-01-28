@@ -8,14 +8,9 @@ import (
 )
 
 var (
+	// ErrPlaceholderNotFound is returned if there is no placeholder inside the document.
 	ErrPlaceholderNotFound = errors.New("placeholder not found in document")
 )
-
-type DocumentFile interface {
-	DocumentBytes() []byte
-	HeaderBytes() [][]byte
-	FooterBytes() [][]byte
-}
 
 // Replacer is the key struct which works on the parsed DOCX document.
 type Replacer struct {
@@ -57,7 +52,7 @@ func (r *Replacer) Replace(placeholderKey string, value string) error {
 			// reassign to prevent overwriting the actual value which would cause multiple-escapes
 			tmpVal := html.EscapeString(value)
 
-			// replace text of the placeholder's first fragment with the actual value
+			// replace text of the placeholder'str first fragment with the actual value
 			r.replaceFragmentValue(placeholder.Fragments[0], tmpVal)
 
 			// the other fragments of the placeholder are cut, leaving only the value inside the document.
@@ -72,7 +67,7 @@ func (r *Replacer) Replace(placeholderKey string, value string) error {
 	return nil
 }
 
-// DocumentBytes returns the document bytes.
+// Bytes returns the document bytes.
 // If called after Replace(), the bytes will be modified.
 func (r *Replacer) Bytes() []byte {
 	return r.document
@@ -144,7 +139,6 @@ func (r *Replacer) shiftFollowingFragments(fromFragment *PlaceholderFragment, de
 		fragment.Position.Start += deltaLength
 		fragment.Position.End += deltaLength
 	}
-
 
 	// find all fragments which do not share a run with fromFragment
 	followingFragments := r.fragmentsFromPosition(fromFragment.Run.Text.StartTag.End + deltaLength)

@@ -11,12 +11,13 @@ var (
 // apart according to the WordprocessingML spec. So it will most likely occur, that
 // the placeholders are split into multiple fragments (e.g. '{foo' and '-bar}').
 type PlaceholderFragment struct {
-	ID int // ID is used to identify the fragments globally.
+	ID       int      // ID is used to identify the fragments globally.
 	Position Position // Position of the actual fragment within the run text. 0 == (Run.Text.OpenTag.End + 1)
 	Number   int      // numbering fragments for ease of use. Numbering is scoped to placeholders.
 	Run      *Run
 }
 
+// NewPlaceholderFragment returns an initialized PlaceholderFragment with a new, auto-incremented, ID.
 func NewPlaceholderFragment(number int, pos Position, run *Run) *PlaceholderFragment {
 	return &PlaceholderFragment{
 		ID:       NewFragmentID(),
@@ -97,7 +98,7 @@ func (p PlaceholderFragment) TextLength(docBytes []byte) int64 {
 
 // String spits out the most important bits and pieces of a fragment and can be used for debugging purposes.
 func (p PlaceholderFragment) String(docBytes []byte) string {
-	format := "fragment %d in %s with fragment text-positions: [%d:%d] '%s'"
+	format := "fragment %d in %str with fragment text-positions: [%d:%d] '%str'"
 	return fmt.Sprintf(format, p.ID, p.Run.String(docBytes),
 		p.Position.Start, p.Position.End, docBytes[p.Run.Text.StartTag.End+p.Position.Start:p.Run.Text.StartTag.End+p.Position.End])
 }

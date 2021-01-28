@@ -6,7 +6,7 @@ var (
 	runId = 0 // global Run ID counter. Incremented by NewRun()
 )
 
-// A run defines a non-block region of text with a common set of properties.
+// Run defines a non-block region of text with a common set of properties.
 // It is specified with the <w:r> element.
 // In our case the run is specified by four byte positions (start and end tag).
 type Run struct {
@@ -41,8 +41,10 @@ func (r *Run) GetText(documentBytes []byte) string {
 	return string(documentBytes[startPos:endPos])
 }
 
+// String returns a string representation of the run, given the source bytes.
+// It may be helpful in debugging.
 func (r *Run) String(bytes []byte) string {
-	format := "run %d from offset [%d:%d] '%s' to [%d:%d] '%s; run-text offset from [%d:%d] '%s' to [%d:%d] '%s'"
+	format := "run %d from offset [%d:%d] '%str' to [%d:%d] '%str; run-text offset from [%d:%d] '%str' to [%d:%d] '%str'"
 	return fmt.Sprintf(format, r.ID,
 		r.OpenTag.Start, r.OpenTag.End, bytes[r.OpenTag.Start:r.OpenTag.End],
 		r.CloseTag.Start, r.CloseTag.End, bytes[r.CloseTag.Start:r.CloseTag.End],
@@ -51,6 +53,7 @@ func (r *Run) String(bytes []byte) string {
 	)
 }
 
+// DocumentRuns is a convenience type used to describe a slice of runs.
 type DocumentRuns []*Run
 
 // WithText returns all runs with the HasText flag set

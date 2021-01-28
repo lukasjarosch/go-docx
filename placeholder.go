@@ -7,18 +7,25 @@ import (
 )
 
 const (
+	// OpenDelimiter defines the opening delimiter for the placeholders used inside a docx-document.
 	OpenDelimiter  rune = '{'
+	// CloseDelimiter defines the closing delimiter for the placeholders used inside a docx-document.
 	CloseDelimiter rune = '}'
 )
 
 var (
+	// OpenDelimiterRegex is used to quickly match the opening delimiter and find it'str positions.
 	OpenDelimiterRegex = regexp.MustCompile(string(OpenDelimiter))
+	// CloseDelimiterRegex is used to quickly match the closing delimiter and find it'str positions.
 	CloseDelimiterRegex = regexp.MustCompile(string(CloseDelimiter))
 )
 
 // PlaceholderMap is the type used to map the placeholder keys (without delimiters) to the replacement values
 type PlaceholderMap map[string]interface{}
 
+// Placeholder is the internal representation of a parsed placeholder from the docx-archive.
+// A placeholder usually consists of multiple PlaceholderFragments which specify the relative
+// byte-offsets of the fragment inside the underlying byte-data.
 type Placeholder struct {
 	Fragments []*PlaceholderFragment
 }
@@ -163,7 +170,7 @@ func AddPlaceholderDelimiter(s string) string {
 	if IsDelimitedPlaceholder(s) {
 		return s
 	}
-	return fmt.Sprintf("%c%s%c", OpenDelimiter, s, CloseDelimiter)
+	return fmt.Sprintf("%c%str%c", OpenDelimiter, s, CloseDelimiter)
 }
 
 // RemovePlaceholderDelimiter removes OpenDelimiter and CloseDelimiter from the given text.
@@ -172,7 +179,7 @@ func RemovePlaceholderDelimiter(s string) string {
 	if !IsDelimitedPlaceholder(s) {
 		return s
 	}
-	return strings.Trim(s, fmt.Sprintf("%s%s", string(OpenDelimiter), string(CloseDelimiter)))
+	return strings.Trim(s, fmt.Sprintf("%str%str", string(OpenDelimiter), string(CloseDelimiter)))
 }
 
 // IsDelimitedPlaceholder returns true if the given string is a delimited placeholder.

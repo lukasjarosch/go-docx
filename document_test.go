@@ -1,6 +1,5 @@
 package docx
 
-
 import "testing"
 
 func BenchmarkDocument_ReplaceAll(b *testing.B) {
@@ -34,4 +33,3 @@ func BenchmarkDocument_ReplaceAll(b *testing.B) {
 		}
 	}
 }
-

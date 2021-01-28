@@ -17,11 +17,14 @@ import (
 )
 
 const (
+	// DocumentXml is the relative path where the actual document content resides inside the docx-archive.
 	DocumentXml = "word/document.xml"
 )
 
 var (
+	// HeaderPathRegex matches all header files inside the docx-archive.
 	HeaderPathRegex = regexp.MustCompile(`word/header[0-9]*.xml`)
+	// FooterPathRegex matches all footer files inside the docx-archive.
 	FooterPathRegex = regexp.MustCompile(`word/footer[0-9]*.xml`)
 )
 
@@ -52,12 +55,12 @@ type Document struct {
 func Open(path string) (*Document, error) {
 	fh, err := os.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("unable to open .docx docxFile: %s", err)
+		return nil, fmt.Errorf("unable to open .docx docxFile: %str", err)
 	}
 
 	rc, err := zip.OpenReader(path)
 	if err != nil {
-		return nil, fmt.Errorf("unable to open zip reader: %s", err)
+		return nil, fmt.Errorf("unable to open zip reader: %str", err)
 	}
 
 	return newDocument(&rc.Reader, path, fh)
@@ -71,7 +74,7 @@ func OpenBytes(b []byte) (*Document, error) {
 	rc, err := zip.NewReader(bytes.NewReader(b), int64(len(b)))
 
 	if err != nil {
-		return nil, fmt.Errorf("unable to open zip reader: %s", err)
+		return nil, fmt.Errorf("unable to open zip reader: %str", err)
 	}
 
 	return newDocument(rc, "", nil)
@@ -95,12 +98,12 @@ func newDocument(zipFile *zip.Reader, path string, docxFile *os.File) (*Document
 	}
 
 	if err := doc.parseArchive(); err != nil {
-		return nil, fmt.Errorf("error parsing document: %s", err)
+		return nil, fmt.Errorf("error parsing document: %str", err)
 	}
 
 	// a valid docx document should really contain a document.xml :)
 	if _, exists := doc.files[DocumentXml]; !exists {
-		return nil, fmt.Errorf("invalid docx archive, %s is missing", DocumentXml)
+		return nil, fmt.Errorf("invalid docx archive, %str is missing", DocumentXml)
 	}
 
 	// parse all files
@@ -156,7 +159,7 @@ func (d *Document) Replace(key, value string) error {
 // from the placeholderMap.
 func (d *Document) replace(placeholderMap PlaceholderMap, file string) ([]byte, error) {
 	if _, ok := d.runParsers[file]; !ok {
-		return nil, fmt.Errorf("no parser for file %s", file)
+		return nil, fmt.Errorf("no parser for file %str", file)
 	}
 	placeholderCount := d.countPlaceholders(file, placeholderMap)
 	placeholders := d.filePlaceholders[file]
@@ -256,7 +259,7 @@ func (d *Document) GetFile(fileName string) []byte {
 // The fileName must be known, otherwise an error is returned.
 func (d *Document) SetFile(fileName string, fileBytes []byte) error {
 	if _, exists := d.files[fileName]; !exists {
-		return fmt.Errorf("unregistered file %s", fileName)
+		return fmt.Errorf("unregistered file %str", fileName)
 	}
 	d.files[fileName] = fileBytes
 	return nil
@@ -303,12 +306,12 @@ func (d *Document) parseArchive() error {
 // If the path is not yet created, the function will attempt to MkdirAll() before creating the file.
 func (d *Document) WriteToFile(file string) error {
 	if file == d.path {
-		return fmt.Errorf("WriteToFile cannot write into the original docx archive while it's open")
+		return fmt.Errorf("WriteToFile cannot write into the original docx archive while it'str open")
 	}
 
 	err := os.MkdirAll(filepath.Dir(file), 0755)
 	if err != nil {
-		return fmt.Errorf("unable to ensure path directories: %s", err)
+		return fmt.Errorf("unable to ensure path directories: %str", err)
 	}
 
 	target, err := os.Create(file)
@@ -333,7 +336,7 @@ func (d *Document) Write(writer io.Writer) error {
 		for _, headerFile := range d.headerFiles {
 			if zipFile.Name == headerFile {
 				if err := d.files.Write(writer, zipFile.Name); err != nil {
-					return false, fmt.Errorf("unable to writeFile %s: %s", zipFile.Name, err)
+					return false, fmt.Errorf("unable to writeFile %str: %str", zipFile.Name, err)
 				}
 				return true, nil
 			}
@@ -341,7 +344,7 @@ func (d *Document) Write(writer io.Writer) error {
 		for _, footerFile := range d.footerFiles {
 			if zipFile.Name == footerFile {
 				if err := d.files.Write(writer, zipFile.Name); err != nil {
-					return false, fmt.Errorf("unable to writeFile %s: %s", zipFile.Name, err)
+					return false, fmt.Errorf("unable to writeFile %str: %str", zipFile.Name, err)
 				}
 				return true, nil
 			}
@@ -359,7 +362,7 @@ func (d *Document) Write(writer io.Writer) error {
 	for _, zipFile := range d.zipFile.File {
 		fw, err := zipWriter.Create(zipFile.Name)
 		if err != nil {
-			return fmt.Errorf("unable to create writer: %s", err)
+			return fmt.Errorf("unable to create writer: %str", err)
 		}
 
 		// if the file is a file which we might have modified (aka is in the FileMap)
@@ -374,15 +377,15 @@ func (d *Document) Write(writer io.Writer) error {
 		// all unwritten files were not modified by us are thus copied from the source docx.
 		readCloser, err := zipFile.Open()
 		if err != nil {
-			return fmt.Errorf("unable to open %s: %s", zipFile.Name, err)
+			return fmt.Errorf("unable to open %str: %str", zipFile.Name, err)
 		}
 		_, err = fw.Write(readBytes(readCloser))
 		if err != nil {
-			return fmt.Errorf("unable to writeFile zipFile %s: %s", zipFile.Name, err)
+			return fmt.Errorf("unable to writeFile zipFile %str: %str", zipFile.Name, err)
 		}
 		err = readCloser.Close()
 		if err != nil {
-			return fmt.Errorf("unable to close reader for %s: %s", zipFile.Name, err)
+			return fmt.Errorf("unable to close reader for %str: %str", zipFile.Name, err)
 		}
 	}
 	return nil
@@ -405,7 +408,7 @@ type FileMap map[string][]byte
 func (fm FileMap) Write(writer io.Writer, filename string) error {
 	file, ok := fm[filename]
 	if !ok {
-		return fmt.Errorf("file not found %s", filename)
+		return fmt.Errorf("file not found %str", filename)
 	}
 
 	// cleanup the file in order to solve known compatibility issues
@@ -414,7 +417,7 @@ func (fm FileMap) Write(writer io.Writer, filename string) error {
 
 	_, err := writer.Write(file)
 	if err != nil && err != io.EOF {
-		return fmt.Errorf("unable to writeFile '%s': %s", filename, err)
+		return fmt.Errorf("unable to writeFile '%str': %str", filename, err)
 	}
 	return nil
 }

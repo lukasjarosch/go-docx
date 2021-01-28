@@ -2,14 +2,15 @@ package main
 
 import (
 	"flag"
-	"github.com/lukasjarosch/go-docx"
 	"time"
+
+	"github.com/lukasjarosch/go-docx"
 )
 
 var templatePath, outputPath string
 
 func init() {
-	flag.StringVar(&templatePath, "template", "template2.docx", "path to the template docx file")
+	flag.StringVar(&templatePath, "template", "template.docx", "path to the template docx file")
 	flag.StringVar(&outputPath, "out", "replaced.docx", "path to the output docx")
 }
 
@@ -24,8 +25,8 @@ func main() {
 		"verwalter.ort":        "Irgendwo",
 		"verwalter.telefon":    "123 123 123 123",
 		"datum.heute":          time.Now().Format("02.01.2006"),
-		"vermietung.brutto": "CHF 123245.00",
-		"vermietung.netto": "CHF 2342.00",
+		"vermietung.brutto":    "CHF 123245.00",
+		"vermietung.netto":     "CHF 2342.00",
 	}
 
 	doc, err := docx.Open(templatePath)
