@@ -4,6 +4,7 @@
 
 [![tests](https://github.com/lukasjarosch/go-docx/workflows/test/badge.svg)](https://github.com/lukasjarosch/go-docx/actions?query=workflow%3Atest)
 [![goreport](https://goreportcard.com/badge/github.com/lukasjarosch/go-docx)](https://goreportcard.com/report/github.com/lukasjarosch/go-docx)
+[![GoDoc reference ](https://img.shields.io/badge/godoc-reference-blue.svg)](https://pkg.go.dev/github.com/lukasjarosch/go-docx)
 
 </p>
 
