@@ -153,7 +153,7 @@ func (r *Replacer) shiftFollowingFragments(fromFragment *PlaceholderFragment, de
 	}
 
 	// find all fragments which do not share a run with fromFragment
-	followingFragments := r.fragmentsFromPosition(fromFragment.Run.Text.StartTag.End + deltaLength)
+	followingFragments := r.fragmentsFromPosition(fromFragment.Run.Text.StartTag.End)
 
 	// remove fragments which have been adjusted already above
 	for i, fragment := range followingFragments {
