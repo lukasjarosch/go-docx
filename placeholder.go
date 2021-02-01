@@ -17,7 +17,7 @@ var (
 	// OpenDelimiterRegex is used to quickly match the opening delimiter and find it'str positions.
 	OpenDelimiterRegex = regexp.MustCompile(string(OpenDelimiter))
 	// CloseDelimiterRegex is used to quickly match the closing delimiter and find it'str positions.
-	CloseDelimiterRegex  = regexp.MustCompile(string(CloseDelimiter))
+	CloseDelimiterRegex = regexp.MustCompile(string(CloseDelimiter))
 )
 
 // PlaceholderMap is the type used to map the placeholder keys (without delimiters) to the replacement values

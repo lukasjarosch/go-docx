@@ -84,7 +84,7 @@ func (dr *DocumentRuns) Push(run *Run) {
 // Pop will return the last Run added to the stack and remove it.
 func (dr *DocumentRuns) Pop() *Run {
 	ret := (*dr)[len(*dr)-1]
-	*dr = (*dr)[0:len(*dr)-1]
+	*dr = (*dr)[0 : len(*dr)-1]
 	return ret
 }
 

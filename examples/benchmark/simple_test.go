@@ -2,8 +2,9 @@ package benchmark
 
 import (
 	"flag"
-	"github.com/lukasjarosch/go-docx"
 	"testing"
+
+	"github.com/lukasjarosch/go-docx"
 )
 
 var templatePath, outputPath string

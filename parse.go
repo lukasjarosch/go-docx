@@ -158,7 +158,7 @@ func (parser *RunParser) findRuns() error {
 		case xml.StartElement:
 			if elem.Name.Local == RunElementName {
 
-				nestCount+=1
+				nestCount += 1
 				if nestCount > 1 {
 					parser.runStack.PushBack(tmpRun)
 					tmpRun = NewEmptyRun()

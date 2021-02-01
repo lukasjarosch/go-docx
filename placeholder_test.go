@@ -24,8 +24,8 @@ func TestParsePlaceholders(t *testing.T) {
 
 	placeholders, err := ParsePlaceholders(parser.Runs().WithText(), docBytes)
 	if err != nil {
-	    t.Error(err)
-	    return
+		t.Error(err)
+		return
 	}
 	if len(placeholders) != expectedPlaceholderCount {
 		t.Errorf("did not parse all placeholders, want=%d, have=%d", expectedPlaceholderCount, len(placeholders))
