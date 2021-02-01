@@ -83,7 +83,7 @@ func OpenBytes(b []byte) (*Document, error) {
 // newDocument will create a new document struct given the zipFile.
 // The params 'path' and 'docxFile' may be empty/nil in case the document is created from a byte source directly.
 //
-// newDocument will parse the docx archive and validate that at least a 'document.xml' exists.
+// newDocument will parse the docx archive and ValidateRuns that at least a 'document.xml' exists.
 // If 'word/document.xml' is missing, an error is returned since the docx cannot be correct.
 // Then all files are parsed for their runs before returning the new document.
 func newDocument(zipFile *zip.Reader, path string, docxFile *os.File) (*Document, error) {
@@ -96,6 +96,9 @@ func newDocument(zipFile *zip.Reader, path string, docxFile *os.File) (*Document
 		filePlaceholders: make(map[string][]*Placeholder),
 		fileReplacers:    make(map[string]*Replacer),
 	}
+
+	ResetRunIdCounter()
+	ResetFragmentIdCounter()
 
 	if err := doc.parseArchive(); err != nil {
 		return nil, fmt.Errorf("error parsing document: %s", err)
@@ -117,10 +120,14 @@ func newDocument(zipFile *zip.Reader, path string, docxFile *os.File) (*Document
 		}
 
 		// parse placeholders and initialize replacers
-		placeholder := ParsePlaceholders(doc.runParsers[name].Runs(), data)
+		placeholder, err := ParsePlaceholders(doc.runParsers[name].Runs(), data)
+		if err != nil {
+			return nil, err
+		}
 		doc.filePlaceholders[name] = placeholder
 		doc.fileReplacers[name] = NewReplacer(data, placeholder)
 	}
+
 	return doc, nil
 }
 

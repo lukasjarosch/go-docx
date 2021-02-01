@@ -2,8 +2,6 @@ package main
 
 import (
 	"flag"
-	"time"
-
 	"github.com/lukasjarosch/go-docx"
 )
 
@@ -18,15 +16,16 @@ func main() {
 	flag.Parse()
 
 	replaceMap := docx.PlaceholderMap{
-		"verwalter.name":       "Verwalter",
-		"verwalter.strasse":    "Strasse",
-		"verwalter.hausnummer": "111",
-		"verwalter.plz":        "8129",
-		"verwalter.ort":        "Irgendwo",
-		"verwalter.telefon":    "123 123 123 123",
-		"datum.heute":          time.Now().Format("02.01.2006"),
-		"vermietung.brutto":    "CHF 123245.00",
-		"vermietung.netto":     "CHF 2342.00",
+		"key":                         "REPLACE some more",
+		"key-with-dash":               "REPLACE",
+		"key-with-dashes":             "REPLACE",
+		"key with space":              "REPLACE",
+		"key_with_underscore":         "REPLACE",
+		"multiline":                   "REPLACE",
+		"key.with.dots":               "REPLACE",
+		"mixed-key.separator_styles#": "REPLACE",
+		"yet-another_placeholder":     "REPLACE",
+		"foo":                         "bar",
 	}
 
 	doc, err := docx.Open(templatePath)

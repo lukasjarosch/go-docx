@@ -22,7 +22,7 @@ func TestReplacer_Replace(t *testing.T) {
 
 	doc, err := Open("./test/template.docx")
 	if err != nil {
-		t.Error("unable to open testfile", err)
+		t.Error(err)
 		return
 	}
 

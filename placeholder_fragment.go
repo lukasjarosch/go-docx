@@ -108,3 +108,8 @@ func NewFragmentID() int {
 	fragmentId += 1
 	return fragmentId
 }
+
+// ResetFragmentIdCounter will reset the fragmentId counter to 0
+func ResetFragmentIdCounter() {
+	fragmentId = 0
+}

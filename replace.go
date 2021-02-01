@@ -61,6 +61,17 @@ func (r *Replacer) Replace(placeholderKey string, value string) error {
 			}
 		}
 	}
+
+	var runs []*Run
+	for _, placeholder := range r.placeholders {
+		for _, fragment := range placeholder.Fragments {
+			runs = append(runs, fragment.Run) // FIXME yea, there will be many duplicates....this is fine for testing
+		}
+	}
+	if err := ValidateRuns(r.document, runs); err != nil {
+		return err
+	}
+
 	if !found {
 		return ErrPlaceholderNotFound
 	}
@@ -115,6 +126,7 @@ func (r *Replacer) cutFragment(fragment *PlaceholderFragment) {
 	r.document = docBytes
 	r.BytesChanged -= cutLength
 	r.shiftFollowingFragments(fragment, -cutLength)
+
 }
 
 // shiftFollowingFragments is responsible of shifting all fragments following the given fragment by some amount.

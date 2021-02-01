@@ -17,7 +17,7 @@ var (
 	// OpenDelimiterRegex is used to quickly match the opening delimiter and find it'str positions.
 	OpenDelimiterRegex = regexp.MustCompile(string(OpenDelimiter))
 	// CloseDelimiterRegex is used to quickly match the closing delimiter and find it'str positions.
-	CloseDelimiterRegex = regexp.MustCompile(string(CloseDelimiter))
+	CloseDelimiterRegex  = regexp.MustCompile(string(CloseDelimiter))
 )
 
 // PlaceholderMap is the type used to map the placeholder keys (without delimiters) to the replacement values
@@ -54,7 +54,7 @@ func (p Placeholder) EndPos() int64 {
 
 // ParsePlaceholders will, given the document run positions and the bytes, parse out all placeholders including
 // their fragments.
-func ParsePlaceholders(runs DocumentRuns, docBytes []byte) (placeholders []*Placeholder) {
+func ParsePlaceholders(runs DocumentRuns, docBytes []byte) (placeholders []*Placeholder, err error) {
 	// tmp vars used to preserve state across iterations
 	unclosedPlaceholder := new(Placeholder)
 	hasOpenPlaceholder := false
@@ -144,7 +144,7 @@ func ParsePlaceholders(runs DocumentRuns, docBytes []byte) (placeholders []*Plac
 		}
 	}
 
-	return placeholders
+	return placeholders, nil
 }
 
 // assembleFullPlaceholders will extract all complete placeholders inside the run given a open and close position.
