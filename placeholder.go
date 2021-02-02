@@ -34,7 +34,7 @@ type Placeholder struct {
 func (p Placeholder) Text(docBytes []byte) string {
 	str := ""
 	for _, fragment := range p.Fragments {
-		s := fragment.Run.Text.StartTag.End
+		s := fragment.Run.Text.OpenTag.End
 		t := docBytes[s+fragment.Position.Start : s+fragment.Position.End]
 		str += string(t)
 	}
@@ -43,13 +43,13 @@ func (p Placeholder) Text(docBytes []byte) string {
 
 // StartPos returns the absolute start position of the placeholder.
 func (p Placeholder) StartPos() int64 {
-	return p.Fragments[0].Run.Text.StartTag.End + p.Fragments[0].Position.Start
+	return p.Fragments[0].Run.Text.OpenTag.End + p.Fragments[0].Position.Start
 }
 
 // EndPos returns the absolute end position of the placeholder.
 func (p Placeholder) EndPos() int64 {
 	end := len(p.Fragments) - 1
-	return p.Fragments[end].Run.Text.StartTag.End + p.Fragments[end].Position.End
+	return p.Fragments[end].Run.Text.OpenTag.End + p.Fragments[end].Position.End
 }
 
 // ParsePlaceholders will, given the document run positions and the bytes, parse out all placeholders including

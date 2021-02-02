@@ -83,7 +83,7 @@ func OpenBytes(b []byte) (*Document, error) {
 // newDocument will create a new document struct given the zipFile.
 // The params 'path' and 'docxFile' may be empty/nil in case the document is created from a byte source directly.
 //
-// newDocument will parse the docx archive and ValidateRuns that at least a 'document.xml' exists.
+// newDocument will parse the docx archive and ValidatePositions that at least a 'document.xml' exists.
 // If 'word/document.xml' is missing, an error is returned since the docx cannot be correct.
 // Then all files are parsed for their runs before returning the new document.
 func newDocument(zipFile *zip.Reader, path string, docxFile *os.File) (*Document, error) {
@@ -415,10 +415,6 @@ func (fm FileMap) Write(writer io.Writer, filename string) error {
 	if !ok {
 		return fmt.Errorf("file not found %s", filename)
 	}
-
-	// cleanup the file in order to solve known compatibility issues
-	// MS Word will not open the document if a file contains a singleton text <w:t/>, thus they need to be removed
-	//file = []byte(strings.Replace(string(file), "<w:t/>", "", -1))
 
 	_, err := writer.Write(file)
 	if err != nil && err != io.EOF {

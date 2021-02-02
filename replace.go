@@ -2,6 +2,7 @@ package docx
 
 import (
 	"errors"
+	"fmt"
 	"html"
 	"strings"
 	"sync"
@@ -16,6 +17,7 @@ var (
 type Replacer struct {
 	document     []byte
 	placeholders []*Placeholder
+	distinctRuns []*Run // slice of all distinct runs extracted from the placeholders used for validation
 	ReplaceCount int
 	BytesChanged int64
 	mu           sync.Mutex
@@ -23,11 +25,14 @@ type Replacer struct {
 
 // NewReplacer returns a new Replacer.
 func NewReplacer(docBytes []byte, placeholder []*Placeholder) *Replacer {
-	return &Replacer{
+	r := &Replacer{
 		document:     docBytes,
 		placeholders: placeholder,
 		ReplaceCount: 0,
 	}
+	r.distinctRuns = r.getDistinctRuns(placeholder)
+
+	return r
 }
 
 // Replace will replace all occurrences of the placeholderKey with the given value.
@@ -62,26 +67,16 @@ func (r *Replacer) Replace(placeholderKey string, value string) error {
 		}
 	}
 
-	var runs []*Run
-	for _, placeholder := range r.placeholders {
-		for _, fragment := range placeholder.Fragments {
-			runs = append(runs, fragment.Run) // FIXME yea, there will be many duplicates....this is fine for testing
-		}
-	}
-	if err := ValidateRuns(r.document, runs); err != nil {
-		return err
+	// all replacing actions might potentially screw up the XML structure
+	// in order to capture this, all tags are re-validated after replacing a value
+	if err := ValidatePositions(r.document, r.distinctRuns); err != nil {
+		return fmt.Errorf("replace produced invalid result: %w", err)
 	}
 
 	if !found {
 		return ErrPlaceholderNotFound
 	}
 	return nil
-}
-
-// Bytes returns the document bytes.
-// If called after Replace(), the bytes will be modified.
-func (r *Replacer) Bytes() []byte {
-	return r.document
 }
 
 // replaceFragmentValue will replace the fragment text with the given value, adjusting all following
@@ -95,8 +90,8 @@ func (r *Replacer) replaceFragmentValue(fragment *PlaceholderFragment, value str
 	deltaLength = valueLength - fragLength
 
 	// cut out the fragment text literal
-	cutStart := fragment.Run.Text.StartTag.End + fragment.Position.Start
-	cutEnd := fragment.Run.Text.StartTag.End + fragment.Position.End
+	cutStart := fragment.Run.Text.OpenTag.End + fragment.Position.Start
+	cutEnd := fragment.Run.Text.OpenTag.End + fragment.Position.End
 	docBytes = append(docBytes[:cutStart], docBytes[cutEnd:]...)
 
 	// insert the value from the cut start position
@@ -109,24 +104,6 @@ func (r *Replacer) replaceFragmentValue(fragment *PlaceholderFragment, value str
 	r.ReplaceCount++
 	r.BytesChanged += deltaLength
 	r.shiftFollowingFragments(fragment, deltaLength)
-}
-
-// curFragment will remove the fragment text from the document bytes.
-// Afterwards, all following fragments will be adjusted.
-func (r *Replacer) cutFragment(fragment *PlaceholderFragment) {
-	docBytes := r.document
-	cutStart := fragment.Run.Text.StartTag.End + fragment.Position.Start
-	cutEnd := fragment.Run.Text.StartTag.End + fragment.Position.End
-	cutLength := fragment.Position.End - fragment.Position.Start
-
-	// cut fragment from document and adjust positions
-	docBytes = append(docBytes[:cutStart], docBytes[cutEnd:]...)
-	fragment.ShiftCut(cutLength)
-
-	r.document = docBytes
-	r.BytesChanged -= cutLength
-	r.shiftFollowingFragments(fragment, -cutLength)
-
 }
 
 // shiftFollowingFragments is responsible of shifting all fragments following the given fragment by some amount.
@@ -153,7 +130,7 @@ func (r *Replacer) shiftFollowingFragments(fromFragment *PlaceholderFragment, de
 	}
 
 	// find all fragments which do not share a run with fromFragment
-	followingFragments := r.fragmentsFromPosition(fromFragment.Run.Text.StartTag.End)
+	followingFragments := r.fragmentsFromPosition(fromFragment.Run.Text.OpenTag.End)
 
 	// remove fragments which have been adjusted already above
 	for i, fragment := range followingFragments {
@@ -193,6 +170,24 @@ func (r *Replacer) shiftFollowingFragments(fromFragment *PlaceholderFragment, de
 	}
 }
 
+// curFragment will remove the fragment text from the document bytes.
+// Afterwards, all following fragments will be adjusted.
+func (r *Replacer) cutFragment(fragment *PlaceholderFragment) {
+	docBytes := r.document
+	cutStart := fragment.Run.Text.OpenTag.End + fragment.Position.Start
+	cutEnd := fragment.Run.Text.OpenTag.End + fragment.Position.End
+	cutLength := fragment.Position.End - fragment.Position.Start
+
+	// cut fragment from document and adjust positions
+	docBytes = append(docBytes[:cutStart], docBytes[cutEnd:]...)
+	fragment.ShiftCut(cutLength)
+
+	r.document = docBytes
+	r.BytesChanged -= cutLength
+	r.shiftFollowingFragments(fragment, -cutLength)
+
+}
+
 // fragmentsFromPosition will return all fragments where: fragment.Run.OpenTag.Start > startingFrom
 func (r *Replacer) fragmentsFromPosition(startingFrom int64) (found []*PlaceholderFragment) {
 	for _, placeholder := range r.placeholders {
@@ -229,4 +224,35 @@ func (r *Replacer) placeholdersInRun(run *Run) (p []*Placeholder) {
 		}
 	}
 	return p
+}
+
+// getDistinctRuns iterates over the given placeholders and returns a slice of runs which contains
+// every run only once.
+func (r *Replacer) getDistinctRuns(placeholder []*Placeholder) []*Run {
+	var seenRuns []int
+	seen := func(runID int) bool {
+		for _, id := range seenRuns {
+			if runId == id {
+				return true
+			}
+		}
+		return false
+	}
+
+	var runs []*Run
+	for _, placeholder := range placeholder {
+		for _, fragment := range placeholder.Fragments {
+			if !seen(fragment.Run.ID) {
+				runs = append(runs, fragment.Run)
+				seenRuns = append(seenRuns, fragment.Run.ID)
+			}
+		}
+	}
+	return runs
+}
+
+// Bytes returns the document bytes.
+// If called after Replace(), the bytes will be modified.
+func (r *Replacer) Bytes() []byte {
+	return r.document
 }

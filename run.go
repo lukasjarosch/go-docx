@@ -6,15 +6,20 @@ var (
 	runId = 0 // global Run ID counter. Incremented by NewRun()
 )
 
+// TagPair describes an opening and closing tag position.
+type TagPair struct {
+	OpenTag  Position
+	CloseTag Position
+}
+
 // Run defines a non-block region of text with a common set of properties.
 // It is specified with the <w:r> element.
 // In our case the run is specified by four byte positions (start and end tag).
 type Run struct {
-	ID       int
-	OpenTag  Position
-	CloseTag Position
-	Text     TextRun
-	HasText  bool
+	TagPair
+	ID      int
+	Text    TagPair // Text is the <w:t> tag pair which is always within a run and cannot be standalone.
+	HasText bool
 }
 
 // NewEmptyRun returns a new, empty run which has only an ID set.
@@ -30,8 +35,8 @@ func (r *Run) GetText(documentBytes []byte) string {
 	if !r.HasText {
 		return ""
 	}
-	startPos := r.Text.StartTag.End
-	endPos := r.Text.EndTag.Start
+	startPos := r.Text.OpenTag.End
+	endPos := r.Text.CloseTag.Start
 
 	if int64(len(documentBytes)) < startPos || int64(len(documentBytes)) < endPos {
 		return ""
@@ -56,8 +61,8 @@ func (r *Run) String(bytes []byte) string {
 	return fmt.Sprintf(format, r.ID,
 		r.OpenTag.Start, r.OpenTag.End, bytes[r.OpenTag.Start:r.OpenTag.End],
 		r.CloseTag.Start, r.CloseTag.End, bytes[r.CloseTag.Start:r.CloseTag.End],
-		r.Text.StartTag.Start, r.Text.StartTag.End, bytes[r.Text.StartTag.Start:r.Text.StartTag.End],
-		r.Text.EndTag.Start, r.Text.EndTag.End, bytes[r.Text.EndTag.Start:r.Text.EndTag.End],
+		r.Text.OpenTag.Start, r.Text.OpenTag.End, bytes[r.Text.OpenTag.Start:r.Text.OpenTag.End],
+		r.Text.CloseTag.Start, r.Text.CloseTag.End, bytes[r.Text.CloseTag.Start:r.Text.CloseTag.End],
 	)
 }
 

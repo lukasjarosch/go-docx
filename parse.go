@@ -24,14 +24,14 @@ var (
 	RunCloseTagRegex = regexp.MustCompile(`(</w:r>)`)
 	// RunSingletonTagRegex matches a singleton run tag
 	RunSingletonTagRegex = regexp.MustCompile(`(<w:r/>)`)
-	// TextRunOpenTagRegex matches all OpenTags for text-runs, including eventually set attributes
-	TextRunOpenTagRegex = regexp.MustCompile(`(<w:t).*>`)
-	// TextRunCloseTagRegex matches the close tag of text-runs
-	TextRunCloseTagRegex = regexp.MustCompile(`(</w:t>)`)
-	// ErrParsingFailed is returned if the parsing failed and the result cannot be used.
+	// TextOpenTagRegex matches all OpenTags for text-runs, including eventually set attributes
+	TextOpenTagRegex = regexp.MustCompile(`(<w:t).*>`)
+	// TextCloseTagRegex matches the close tag of text-runs
+	TextCloseTagRegex = regexp.MustCompile(`(</w:t>)`)
+	// ErrTagsInvalid is returned if the parsing failed and the result cannot be used.
 	// Typically this means that one or more tag-offsets were not parsed correctly which
 	// would cause the document to become corrupted as soon as replacing starts.
-	ErrParsingFailed = errors.New("failed to parse the document, cannot continue")
+	ErrTagsInvalid = errors.New("one or more tags are invalid and will cause the XML to be corrupt")
 )
 
 // RunParser can parse a list of Runs from a given byte slice.
@@ -63,51 +63,12 @@ func (parser *RunParser) Execute() error {
 		return err
 	}
 
-	return ValidateRuns(parser.doc, parser.runs)
+	return ValidatePositions(parser.doc, parser.runs)
 }
 
 // Runs returns the all runs found by the parser.
 func (parser *RunParser) Runs() DocumentRuns {
 	return parser.runs
-}
-
-// ValidateRuns will iterate over all runs and their texts (if any) and ensure that they match
-// their respective regex.
-// If the validation failed, the replacement will not work since offsets are wrong.
-func ValidateRuns(document []byte, runs []*Run) error {
-	parsingFailed := false
-	for _, run := range runs {
-
-		// singleton tags must not be validated
-		if RunSingletonTagRegex.MatchString(string(document[run.OpenTag.Start:run.OpenTag.End])) {
-			continue
-		}
-
-		if !RunOpenTagRegex.MatchString(string(document[run.OpenTag.Start:run.OpenTag.End])) {
-			log.Println("RunOpenTagRegex failed to match", run.String(document))
-			parsingFailed = true
-		}
-		if !RunCloseTagRegex.MatchString(string(document[run.CloseTag.Start:run.CloseTag.End])) {
-			log.Println("RunCloseTagRegex failed to match", run.String(document))
-			parsingFailed = true
-		}
-
-		if run.HasText {
-			if !TextRunOpenTagRegex.MatchString(string(document[run.Text.StartTag.Start:run.Text.StartTag.End])) {
-				log.Println("TextRunOpenTagRegex failed to match", run.String(document))
-				parsingFailed = true
-			}
-			if !TextRunCloseTagRegex.MatchString(string(document[run.Text.EndTag.Start:run.Text.EndTag.End])) {
-				log.Println("TextRunCloseTagRegex failed to match", run.String(document))
-				parsingFailed = true
-			}
-		}
-	}
-	if parsingFailed {
-		return ErrParsingFailed
-	}
-
-	return nil
 }
 
 // FindRuns will search through the document and return all runs found.
@@ -120,8 +81,8 @@ func (parser *RunParser) findRuns() error {
 	tmpRun := NewEmptyRun()
 	singleton := false
 
-	// nestCount holds the nesting-level. It is going to be incremented on every StartTag and decremented
-	// on every EndTag.
+	// nestCount holds the nesting-level. It is going to be incremented on every OpenTag and decremented
+	// on every CloseTag.
 	nestCount := 0
 
 	// popRun will pop the last Run from the runStack if there is any on the stack
@@ -132,7 +93,7 @@ func (parser *RunParser) findRuns() error {
 	}
 
 	// nextIteration resets the temporary values used inside the for-loop to be ready for the next iteration
-	// This is used after a run has been fully analyzed (StartTag and EndTag were found).
+	// This is used after a run has been fully analyzed (OpenTag and CloseTag were found).
 	// As long as there are runs on the runStack, they will be popped from it.
 	// Only when the stack is empty, a new empty Run struct is created.
 	nextIteration := func() {
@@ -186,7 +147,7 @@ func (parser *RunParser) findRuns() error {
 			if elem.Name.Local == RunElementName {
 
 				// if the run is a singleton tag, it was already identified by the xml.StartElement case
-				// in that case, the EndTag is the same as the openTag and no further work needs to be done
+				// in that case, the CloseTag is the same as the openTag and no further work needs to be done
 				if singleton {
 					tmpRun.CloseTag = tmpRun.OpenTag
 					parser.runs = append(parser.runs, tmpRun) // run is finished
@@ -213,7 +174,7 @@ func (parser *RunParser) findRuns() error {
 
 	if nestCount != 0 {
 		log.Printf("invalid nestCount, should be 0 but is %d\n", nestCount)
-		return ErrParsingFailed
+		return ErrTagsInvalid
 	}
 
 	return nil
@@ -257,7 +218,7 @@ func (parser *RunParser) findTextRuns() error {
 					return fmt.Errorf("unable to find currentRun for text start-element")
 				}
 				currentRun.HasText = true
-				currentRun.Text.StartTag = Position{
+				currentRun.Text.OpenTag = Position{
 					Start: tagStartPos,
 					End:   tagEndPos,
 				}
@@ -275,7 +236,7 @@ func (parser *RunParser) findTextRuns() error {
 				if currentRun == nil {
 					return fmt.Errorf("unable to find currentRun for text end-element")
 				}
-				currentRun.Text.EndTag = Position{
+				currentRun.Text.CloseTag = Position{
 					Start: tagStartPos,
 					End:   tagEndPos,
 				}
@@ -297,22 +258,56 @@ func (parser *RunParser) findOpenBracketPos(endBracketPos int64) int64 {
 	return 0
 }
 
-// TagPosition returns a filled Position struct given the end position and the tag itself.
-func TagPosition(endPos int64, tag string) (tp Position) {
-	tp.End = endPos
-	tp.Start = endPos - int64(len(tag))
-	return tp
-}
+// ValidatePositions will iterate over all runs and their texts (if any) and ensure that they match
+// their respective regex.
+// If the validation failed, the replacement will not work since offsets are wrong.
+func ValidatePositions(document []byte, runs []*Run) error {
+	parsingFailed := false
+	for _, run := range runs {
 
-// TextRun defines the <w:t> element which contains the actual literal text data.
-// A TextRun is always a child of a Execute.
-type TextRun struct {
-	StartTag Position
-	EndTag   Position
+		// singleton tags must not be validated
+		if run.OpenTag.Match(RunSingletonTagRegex, document) {
+			continue
+		}
+
+		if !run.OpenTag.Match(RunOpenTagRegex, document) {
+			log.Println("RunOpenTagRegex failed to match", run.String(document))
+			parsingFailed = true
+		}
+		if !run.CloseTag.Match(RunCloseTagRegex, document) {
+			log.Println("RunCloseTagRegex failed to match", run.String(document))
+			parsingFailed = true
+		}
+
+		if run.HasText {
+			if !run.Text.OpenTag.Match(TextOpenTagRegex, document) {
+				log.Println("TextOpenTagRegex failed to match", run.String(document))
+				parsingFailed = true
+			}
+			if !run.Text.CloseTag.Match(TextCloseTagRegex, document) {
+				log.Println("TextCloseTagRegex failed to match", run.String(document))
+				parsingFailed = true
+			}
+		}
+	}
+	if parsingFailed {
+		return ErrTagsInvalid
+	}
+
+	return nil
 }
 
 // Position is a generic position of a tag, represented by byte offsets
 type Position struct {
 	Start int64
 	End   int64
+}
+
+// Match will apply a MatchString using the given regex on the given data and returns true if the position
+// matches the regex inside the data.
+func (p Position) Match(regexp *regexp.Regexp, data []byte) bool {
+	if !regexp.MatchString(string(data[p.Start:p.End])) {
+		return false
+	}
+	return true
 }

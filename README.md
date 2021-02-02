@@ -103,12 +103,11 @@ To not cause too much confusion, here is a list of terms which you might come ac
 
 * **Parser**: Every file which this lib handles (document, footers and headers) has their own parser attached since everything is relative to the underlying byte-slice (aka. file).
 * **Position**: A Position is just a `Start` and `End` offset, relative to the byte slice of the document of a parser.
-* **Run**: Describes the pair `<w:r>` and `</w:r>` and thus has two `Positions` for the open and close tag. Since they are Positions, they have a `Start` and `End` Position which point to `<` and `>` of the tag. A run also consists of a `TextRun`.
-* **TextRun**: Is always nested inside a run and describes the tags `<w:t>` and `</w:t>`. It also just consists of two `Positions`. The type was just created for clarity and does not have special functionality.
+* **Run**: Describes the pair `<w:r>` and `</w:r>` and thus has two `Positions` for the open and close tag. Since they are Positions, they have a `Start` and `End` Position which point to `<` and `>` of the tag. A run also consists of a `TagPair`.
 
 * **Placeholder**: A Placeholder is basically just a list of `PlaceholderFragments` representing a full placeholder extracted by a `Parser`.
 * **PlaceholderFragment**: A PlaceholderFragment is a parsed fragment of a placeholder since those will most likely be ripped apart by WordprocessingML. The Placeholder `{foo-bar-baz}` might ultimately consist of 5 fragments ( `{`, `foo-`, `bar-`, `baz`, `}`).
-The fragment is at the heart of replacing. It knows to which `Run` it belongs to and has methods of manipulating these byte-offsets. Additionally it has a `Position` which describes the offset inside the `TextRun` since the fragments don't always start at the beginning of one (e.g. `<w:t>some text {fragment-start</w:t>`)
+The fragment is at the heart of replacing. It knows to which `Run` it belongs to and has methods of manipulating these byte-offsets. Additionally it has a `Position` which describes the offset inside the `TagPair` since the fragments don't always start at the beginning of one (e.g. `<w:t>some text {fragment-start</w:t>`)
 
 ### ➤ How it works
 This section will give you a short overview of what's actually going on.

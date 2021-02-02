@@ -38,10 +38,10 @@ func (p *PlaceholderFragment) ShiftAll(deltaLength int64) {
 	p.Run.OpenTag.End += deltaLength
 	p.Run.CloseTag.Start += deltaLength
 	p.Run.CloseTag.End += deltaLength
-	p.Run.Text.StartTag.Start += deltaLength
-	p.Run.Text.StartTag.End += deltaLength
-	p.Run.Text.EndTag.Start += deltaLength
-	p.Run.Text.EndTag.End += deltaLength
+	p.Run.Text.OpenTag.Start += deltaLength
+	p.Run.Text.OpenTag.End += deltaLength
+	p.Run.Text.CloseTag.Start += deltaLength
+	p.Run.Text.CloseTag.End += deltaLength
 }
 
 // ShiftCut will shift the fragment position markers in such a way that the fragment can be considered empty.
@@ -52,8 +52,8 @@ func (p *PlaceholderFragment) ShiftAll(deltaLength int64) {
 // If that data was removed from the document, the positions (not all positions) of the fragment need to be adjusted.
 // The text positions are set equal (start == end).
 func (p *PlaceholderFragment) ShiftCut(cutLength int64) {
-	p.Run.Text.EndTag.Start -= cutLength
-	p.Run.Text.EndTag.End -= cutLength
+	p.Run.Text.CloseTag.Start -= cutLength
+	p.Run.Text.CloseTag.End -= cutLength
 	p.Run.CloseTag.Start -= cutLength
 	p.Run.CloseTag.End -= cutLength
 	p.Position.End = p.Position.Start
@@ -64,8 +64,8 @@ func (p *PlaceholderFragment) ShiftCut(cutLength int64) {
 // For example, the fragment text was 'placeholder' (11 bytes) which is replaced with 'a-super-awesome-value' (21 bytes)
 // In that case the deltaLength would be 10. In order to accommodate for the change in bytes you'd need to call ShiftReplace(10)
 func (p *PlaceholderFragment) ShiftReplace(deltaLength int64) {
-	p.Run.Text.EndTag.Start += deltaLength
-	p.Run.Text.EndTag.End += deltaLength
+	p.Run.Text.CloseTag.Start += deltaLength
+	p.Run.Text.CloseTag.End += deltaLength
 	p.Run.CloseTag.Start += deltaLength
 	p.Run.CloseTag.End += deltaLength
 	p.Position.End += deltaLength
@@ -73,12 +73,12 @@ func (p *PlaceholderFragment) ShiftReplace(deltaLength int64) {
 
 // StartPos returns the absolute start position of the fragment.
 func (p PlaceholderFragment) StartPos() int64 {
-	return p.Run.Text.StartTag.End + p.Position.Start
+	return p.Run.Text.OpenTag.End + p.Position.Start
 }
 
 // EndPos returns the absolute end position of the fragment.
 func (p PlaceholderFragment) EndPos() int64 {
-	return p.Run.Text.StartTag.End + p.Position.End
+	return p.Run.Text.OpenTag.End + p.Position.End
 }
 
 // Text returns the actual text of the fragment given the source bytes.
@@ -100,7 +100,7 @@ func (p PlaceholderFragment) TextLength(docBytes []byte) int64 {
 func (p PlaceholderFragment) String(docBytes []byte) string {
 	format := "fragment %d in %s with fragment text-positions: [%d:%d] '%s'"
 	return fmt.Sprintf(format, p.ID, p.Run.String(docBytes),
-		p.Position.Start, p.Position.End, docBytes[p.Run.Text.StartTag.End+p.Position.Start:p.Run.Text.StartTag.End+p.Position.End])
+		p.Position.Start, p.Position.End, docBytes[p.Run.Text.OpenTag.End+p.Position.Start:p.Run.Text.OpenTag.End+p.Position.End])
 }
 
 // NewFragmentID returns the next Fragment.ID
