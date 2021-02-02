@@ -306,8 +306,5 @@ type Position struct {
 // Match will apply a MatchString using the given regex on the given data and returns true if the position
 // matches the regex inside the data.
 func (p Position) Match(regexp *regexp.Regexp, data []byte) bool {
-	if !regexp.MatchString(string(data[p.Start:p.End])) {
-		return false
-	}
-	return true
+	return regexp.MatchString(string(data[p.Start:p.End]))
 }
