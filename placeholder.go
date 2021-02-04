@@ -90,15 +90,88 @@ func ParsePlaceholders(runs DocumentRuns, docBytes []byte) (placeholders []*Plac
 		openPos := delimPositions(openDelimPositions)
 		closePos := delimPositions(closeDelimPositions)
 
-		// simple case: only full placeholders inside the run
+
+		// In case there are the same amount of open and close delimiters.
+		// Here we will have three three different sub-cases.
+		// Case 1 (default):
+		//			'{foo}{bar}' which is the simplest case to handle
+		//
+		// Case 2 (special):
+		//			'}foo{bar}foo{' which can easily be detected by checking if 'openPos > endPos'.
+		//			That case can only be valid if there is an unclosed placeholder in a previous run.
+		//			If there is no unclosed placeholder, then there is some form of user error (e.g. '{baz}}foo{bar}').
+		//			We can also be sure that the first close and the last open delimiters are wrong, all the other ones
+		//			in between will be correct, given the len(openPos)==len(closePos) premise.
+		//			We're ignoring the case in which the user might've entered '}foo}bar{foo{' and went full derp-mode.
+		//
+		// Case 3 (nested):
+		//			'{foo{bar}foo}' aka placeholder-nesting, which is acatually not going to be supported
+		//			but needs to be detected and handled anyway. TODO handle nestings
 		if (len(openPos) == len(closePos)) && len(openPos) != 0 {
+
+			// isSpecialCase checks if, for all found delimiters, startPos > endPos is true (case 2)
+			isSpecialCase := func() bool {
+				for i := 0; i < len(openPos); i++ {
+					start := openPos[i]
+					end := closePos[i] + 1 // +1 is required to include the closing delimiter in the text
+					if start > end {
+						return true
+					}
+				}
+				return false
+			}
+
+			// isNestedCase checks if, .... (case 3)
+			isNestedCase := func() bool {
+				// TODO
+				return false
+			}
+
+			// handle case 2
+			if isSpecialCase() {
+
+				// handle the easy part (everything between the the culprit first '}' and last '{' in the example of '}foo{bar}foo{'
+				validOpenPos := openPos[:len(openPos)-1]
+				validClosePos := closePos[1:]
+				placeholders = append(placeholders, assembleFullPlaceholders(run, validOpenPos, validClosePos)...)
+
+				// extract the first open and last close delimiter positions as they are the one causing issues.
+				lastOpenPos := openPos[len(openPos)-1]
+				firstClosePos := closePos[0]
+
+				// we MUST be having an unclosedPlaceholder or the user made a typo like double-closing ('{foo}}{bar')
+				if !hasOpenPlaceholder {
+					return nil, fmt.Errorf("unexpected %c in run %d \"%s\"), missing preceeding %c", CloseDelimiter, run.ID, run.GetText(docBytes), OpenDelimiter)
+				}
+
+				// everything up to firstClosePos belongs to the currently open placeholder
+				fragment := NewPlaceholderFragment(0, Position{0, int64(firstClosePos)+1}, run)
+				unclosedPlaceholder.Fragments = append(unclosedPlaceholder.Fragments, fragment)
+				placeholders = append(placeholders, unclosedPlaceholder)
+
+				// a new, unclosed, placeholder starts at lastOpenPos
+				fragment = NewPlaceholderFragment(0, Position{int64(lastOpenPos), int64(len(runText))}, run)
+				unclosedPlaceholder = new(Placeholder)
+				unclosedPlaceholder.Fragments = append(unclosedPlaceholder.Fragments, fragment)
+				hasOpenPlaceholder = true
+
+				continue
+			}
+
+			// handle case 3
+			if isNestedCase() {
+				fmt.Println("NESTED")
+				continue
+			}
+
+			// case 1, assemble and continue
 			placeholders = append(placeholders, assembleFullPlaceholders(run, openPos, closePos)...)
 			continue
 		}
 
-		// more open than closing delimiters
+		// More open than closing delimiters, e.g. '{foo}{bar'
 		// this can only mean that a placeholder is left unclosed after this run
-		// For the length this must mean: (len(openPos) + 1) == len(closePos)
+		// For the length this means that (len(openPos) + 1) == len(closePos)
 		// So we can be sure that the last position in openPos is the opening tag of the
 		// unclosed placeholder.
 		if len(openPos) > len(closePos) {
@@ -114,7 +187,7 @@ func ParsePlaceholders(runs DocumentRuns, docBytes []byte) (placeholders []*Plac
 			continue
 		}
 
-		// more closing than opening delimiters
+		// More closing than opening delimiters, e.g. '}{foo}'
 		// this can only mean that there must be an unclosed placeholder which
 		// is closed in this run.
 		if len(openPos) < len(closePos) {
@@ -134,8 +207,13 @@ func ParsePlaceholders(runs DocumentRuns, docBytes []byte) (placeholders []*Plac
 			continue
 		}
 
-		// no placeholders at all. The run is only important if there
-		// is an unclosed placeholder. That means that the full run belongs to the placeholder.
+		// No placeholders at all.
+		// The run is only relevant if there is an unclosed placeholder from a previous run.
+		// In that case it means that the full run-text belongs to the placeholder.
+		// For example, if a placeholder has three fragments in total, this represents fragment 2 (see below)
+		//	1) '{foo'
+		//	2) 'bar-'
+		//	3) '-baz}
 		if len(openPos) == 0 && len(closePos) == 0 {
 			if hasOpenPlaceholder {
 				fragment := NewPlaceholderFragment(0, Position{0, int64(len(runText))}, run)
@@ -145,7 +223,9 @@ func ParsePlaceholders(runs DocumentRuns, docBytes []byte) (placeholders []*Plac
 		}
 	}
 
-	// make sure that we're dealing with valid and proper placeholders only. everything else may cause issues
+	// Make sure that we're dealing with valid and proper placeholders only.
+	// Everything else may cause issues like out of bounds errors or any other sort of weird things.
+	// Here we will also assemble the final list of placeholders and return only the valid ones.
 	var validPlaceholders []*Placeholder
 	for _, placeholder := range placeholders {
 		if !placeholder.Valid() {
@@ -162,14 +242,13 @@ func ParsePlaceholders(runs DocumentRuns, docBytes []byte) (placeholders []*Plac
 		// placeholder is valid
 		validPlaceholders = append(validPlaceholders, placeholder)
 	}
-
 	return validPlaceholders, nil
 }
 
 // assembleFullPlaceholders will extract all complete placeholders inside the run given a open and close position.
 // The open and close positions are the positions of the Delimiters which must already be known at this point.
 // openPos and closePos are expected to be symmetrical (e.g. same length).
-// Example: openPos := []int{10,20,30}; closePos := []int{13, 23, 33}
+// Example: openPos := []int{10,20,30}; closePos := []int{13, 23, 33} resulting in 3 fragments (10,13),(20,23),(30,33)
 // The n-th elements inside openPos and closePos must be matching delimiter positions.
 func assembleFullPlaceholders(run *Run, openPos, closePos []int) (placeholders []*Placeholder) {
 	for i := 0; i < len(openPos); i++ {
