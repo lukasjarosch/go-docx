@@ -2,6 +2,7 @@ package docx
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 	"strings"
 )
@@ -121,9 +122,16 @@ func ParsePlaceholders(runs DocumentRuns, docBytes []byte) (placeholders []*Plac
 				return false
 			}
 
-			// isNestedCase checks if, .... (case 3)
+			// isNestedCase checks if, there are >1 OpenDelimiters before the first CloseDelimiter
+			// if there is only 1 openPos, this cannot be true (we already know that it's not 0
 			isNestedCase := func() bool {
-				// TODO
+				if len(openPos) == 1 {
+					return false
+				}
+				if openPos[0] < closePos [0] &&
+					openPos[1] < closePos[0] {
+					return true
+				}
 				return false
 			}
 
@@ -158,9 +166,12 @@ func ParsePlaceholders(runs DocumentRuns, docBytes []byte) (placeholders []*Plac
 				continue
 			}
 
-			// handle case 3
+			// there are multiple ways to handle this
+			//	- error
+			//	- cut out
+			// 	- skip the run (that's what we do because we're lazy bums)
 			if isNestedCase() {
-				fmt.Println("NESTED")
+				log.Printf("detected nested placeholder in run %d \"%s\", skipping \n", run.ID, run.GetText(docBytes))
 				continue
 			}
 
