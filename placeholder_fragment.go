@@ -103,6 +103,15 @@ func (p PlaceholderFragment) String(docBytes []byte) string {
 		p.Position.Start, p.Position.End, docBytes[p.Run.Text.OpenTag.End+p.Position.Start:p.Run.Text.OpenTag.End+p.Position.End])
 }
 
+// Valid returns true if all positions of the fragment are valid.
+func (p PlaceholderFragment) Valid() bool {
+	return p.Run.OpenTag.Valid() &&
+		p.Run.CloseTag.Valid() &&
+		p.Run.Text.OpenTag.Valid() &&
+		p.Run.Text.CloseTag.Valid() &&
+		p.Position.Valid()
+}
+
 // NewFragmentID returns the next Fragment.ID
 func NewFragmentID() int {
 	fragmentId += 1

@@ -308,3 +308,9 @@ type Position struct {
 func (p Position) Match(regexp *regexp.Regexp, data []byte) bool {
 	return regexp.MatchString(string(data[p.Start:p.End]))
 }
+
+// Valid returns true if Start <= End.
+// Only then the position can be used, otherwise there will be a 'slice out of bounds' along the way.
+func (p Position) Valid() bool {
+	return p.Start <= p.End
+}

@@ -2,6 +2,7 @@ package docx
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 	"strings"
 )
@@ -50,6 +51,17 @@ func (p Placeholder) StartPos() int64 {
 func (p Placeholder) EndPos() int64 {
 	end := len(p.Fragments) - 1
 	return p.Fragments[end].Run.Text.OpenTag.End + p.Fragments[end].Position.End
+}
+
+// Valid determines whether the placeholder can be used.
+// A placeholder is considered valid, if all fragments are valid.
+func (p Placeholder) Valid() bool {
+	for _, fragment := range p.Fragments {
+		if !fragment.Valid() {
+			return false
+		}
+	}
+	return true
 }
 
 // ParsePlaceholders will, given the document run positions and the bytes, parse out all placeholders including
@@ -134,14 +146,23 @@ func ParsePlaceholders(runs DocumentRuns, docBytes []byte) (placeholders []*Plac
 		}
 	}
 
-	// in order to catch false positives, ensure that all placeholders have BOTH delimiters
-	// if a placeholder only has one, remove it since it cannot be right.
-	for i, placeholder := range placeholders {
+	// make sure that we're dealing with valid and proper placeholders only. everything else may cause issues
+	var validPlaceholders []*Placeholder
+	for _, placeholder := range placeholders {
+		if !placeholder.Valid() {
+			log.Println("invalid placeholder", placeholder)
+			continue
+		}
+
+		// in order to catch false positives, ensure that all placeholders have BOTH delimiters
 		text := placeholder.Text(docBytes)
 		if !strings.ContainsRune(text, OpenDelimiter) ||
 			!strings.ContainsRune(text, CloseDelimiter) {
-			placeholders = append(placeholders[:i], placeholders[i+1:]...)
+			continue
 		}
+
+		// placeholder is valid
+		validPlaceholders = append(validPlaceholders, placeholder)
 	}
 
 	return placeholders, nil
