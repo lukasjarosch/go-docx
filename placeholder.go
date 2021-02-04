@@ -2,7 +2,6 @@ package docx
 
 import (
 	"fmt"
-	"log"
 	"regexp"
 	"strings"
 )
@@ -150,7 +149,6 @@ func ParsePlaceholders(runs DocumentRuns, docBytes []byte) (placeholders []*Plac
 	var validPlaceholders []*Placeholder
 	for _, placeholder := range placeholders {
 		if !placeholder.Valid() {
-			log.Println("invalid placeholder", placeholder)
 			continue
 		}
 
@@ -165,7 +163,7 @@ func ParsePlaceholders(runs DocumentRuns, docBytes []byte) (placeholders []*Plac
 		validPlaceholders = append(validPlaceholders, placeholder)
 	}
 
-	return placeholders, nil
+	return validPlaceholders, nil
 }
 
 // assembleFullPlaceholders will extract all complete placeholders inside the run given a open and close position.
