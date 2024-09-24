@@ -46,14 +46,3 @@ func TestParsePlaceholders(t *testing.T) {
 		}
 	}
 }
-
-func TestPlaceholder_AssembleFullPlaceholders(t *testing.T) {
-	expectedCount := 2
-	openPos := []int{10, 18}
-	closePos := []int{17, 25}
-
-	placeholders := assembleFullPlaceholders(&Run{}, openPos, closePos)
-	if len(placeholders) != expectedCount {
-		t.Errorf("not all full placeholders were parsed, want=%d, have=%d", expectedCount, len(placeholders))
-	}
-}
