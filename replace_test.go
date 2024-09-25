@@ -18,6 +18,7 @@ func TestReplacer_Replace(t *testing.T) {
 		"mixed-key.separator_styles#": "mixed-key.separator_styles#",
 		"yet-another_placeholder":     "yet-another_placeholder",
 		"foo":                         "foo",
+		"nested":                      "nested",
 	}
 
 	doc, err := Open("./test/template.docx")

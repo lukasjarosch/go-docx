@@ -13,17 +13,17 @@ var (
 type PlaceholderFragment struct {
 	ID       int      // ID is used to identify the fragments globally.
 	Position Position // Position of the actual fragment within the run text. 0 == (Run.Text.OpenTag.End + 1)
-	Number   int      // numbering fragments for ease of use. Numbering is scoped to placeholders.
-	Run      *Run
+	//Number   int      // numbering fragments for ease of use. Numbering is scoped to placeholders.
+	Run     *Run
+	SpanRun []*Run
 }
 
 // NewPlaceholderFragment returns an initialized PlaceholderFragment with a new, auto-incremented, ID.
-func NewPlaceholderFragment(number int, pos Position, run *Run) *PlaceholderFragment {
+func NewPlaceholderFragment(pos Position, run *Run) *PlaceholderFragment {
 	return &PlaceholderFragment{
 		ID:       NewFragmentID(),
-		Position: pos,
-		Number:   number,
 		Run:      run,
+		Position: pos,
 	}
 }
 
